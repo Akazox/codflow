@@ -13,20 +13,23 @@ import { resolveContent } from "@/theme/content";
 import type { StoreConfig } from "@/core/api/types";
 import type { StoreFrontContent } from "@/theme/content";
 
+// Akalya owns its palette and fonts in styles/global.css (`--akl-*`). These
+// colour/font fields mirror it for metadata only (theme-color) — the dashboard's
+// values are never injected into the page. Keep them in step with global.css.
 export const DEFAULT_CONFIG: StoreConfig = {
   id: "",
-  name: "متجري",
+  name: "Akalya",
   domain: null,
   logoUrl: null,
   themeId: "akalya",
-  primaryColor: "#7c3aed",
-  accentColor: "#f59e0b",
-  bgColor: "#f8f8f8",
-  fontFamily: "Cairo, sans-serif",
+  primaryColor: "#b5562f",
+  accentColor: "#7d8b6a",
+  bgColor: "#f6efe6",
+  fontFamily: "Fraunces, Jost, serif",
   fontUrl: null,
-  lang: "ar",
+  lang: "fr",
   currency: "DZD",
-  currencySymbol: "دج",
+  currencySymbol: "DA",
   contentJson: null,
   metaTitle: null,
   metaDescription: null,

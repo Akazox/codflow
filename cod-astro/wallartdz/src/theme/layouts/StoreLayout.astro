@@ -4,7 +4,7 @@ import BaseHead from "@/theme/components/layout/BaseHead.astro";
 import Header from "@/theme/components/layout/Header.astro";
 import Footer from "@/theme/components/layout/Footer.astro";
 import CartDrawer from "@/theme/components/cart/CartDrawer.astro";
-import MobileNav from "@/theme/components/layout/MobileNav.astro";
+import Wordmark from "@/theme/components/layout/Wordmark.astro";
 import WhatsAppWidget from "@/theme/components/chat/WhatsAppWidget.astro";
 import { showsWidgetOn } from "@/theme/utils/shows-widget-on";
 import type { StoreConfig } from "@/core/api/types";
@@ -19,33 +19,24 @@ interface Props {
   noindex?: boolean;
   config?: StoreConfig;
   content?: StoreFrontContent;
-  hideMobileNav?: boolean;
-  /** Marketing mode (landing pages): no header, no mobile nav, no footer —
-   *  the page is images + form + sticky CTA, nothing else. */
+  /** Reserve room at the bottom of the page for the sticky order bar (mobile). */
+  stickyBar?: boolean;
+  /** Marketing mode (landing pages): no navigation and no store footer — a
+   *  brand bar, the page itself, and the legal links Meta reviewers look for. */
   marketing?: boolean;
   /** LCP images (landing page stack top) — preloaded in <head>. */
   preloadImages?: string[];
 }
 
-const { title, description, ogImage, noindex, config: c, content, marketing = false, preloadImages } = Astro.props;
-const hideMobileNav = marketing || Astro.props.hideMobileNav;
+const { title, description, ogImage, noindex, config: c, content, marketing = false, stickyBar = false, preloadImages } = Astro.props;
 const config = c ?? DEFAULT_CONFIG;
+const year = new Date().getFullYear();
 
 const isRTL = config.lang === "ar";
 const pageTitle = title ?? config.metaTitle ?? config.name;
 const pageDesc = description ?? config.metaDescription ?? (content?.defaultMetaDescription?.replace("{storeName}", config.name) ?? `Shop from ${config.name}`);
 const pageOg = ogImage ?? config.ogImage ?? "";
 
-// Sanitise theme values — never trust DB content as CSS
-const HEX = /^#[0-9a-fA-F]{3,8}$/;
-const primary = HEX.test(config.primaryColor) ? config.primaryColor : "#7c3aed";
-const accent  = HEX.test(config.accentColor)  ? config.accentColor  : "#f59e0b";
-const bg      = HEX.test(config.bgColor)      ? config.bgColor      : "#f4f4f7";
-const font    = config.fontFamily.replace(/["<>]/g, "");
-
-// Google Fonts — default: Cairo (AR) + Plus Jakarta Sans (EN fallback)
-const fontHref = config.fontUrl?.replace(/["<>]/g, "")
-  ?? "https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap";
 ---
 
 <!doctype html>
@@ -56,30 +47,43 @@ const fontHref = config.fontUrl?.replace(/["<>]/g, "")
     ogImage={pageOg}
     noindex={noindex}
     config={config}
-    primary={primary}
-    accent={accent}
-    bg={bg}
-    font={font}
-    fontHref={fontHref}
     preloadImages={preloadImages}
   />
 
-  <body class:list={[!hideMobileNav && "has-mobile-nav"]}>
-    <!-- Announcement bar -->
-    {!marketing && (config.announcementBar || content?.announcementText) && (
+  <body class:list={[stickyBar && "has-sticky-bar"]}>
+    {(config.announcementBar || content?.announcementText) && (
       <div class="store-announce">
-        <Icon name="heroicons:truck" class="w-3.5 h-3.5 opacity-80" />
+        <Icon name="heroicons:truck" aria-hidden="true" />
         <span>{config.announcementBar ?? content?.announcementText}</span>
       </div>
     )}
 
-    {!marketing && <Header config={config} content={content} />}
+    {marketing ? (
+      <div class="wd-lp-bar"><Wordmark config={config} static={true} /></div>
+    ) : (
+      <Header config={config} content={content} />
+    )}
 
     <main>
       <slot />
     </main>
 
-    {!marketing && <Footer config={config} content={content} />}
+    {marketing ? (
+      <footer class="wd-footer">
+        <div class="wd-footer-bottom">
+          <div class="wd-container flex flex-col items-center gap-2 text-center">
+            {config.pages.length > 0 && (
+              <nav class="flex flex-wrap justify-center gap-x-4 gap-y-1" aria-label={content?.footerLegal}>
+                {config.pages.map((page) => <a href={`/pages/${page.slug}`}>{page.title}</a>)}
+              </nav>
+            )}
+            <p>&copy; {year} {config.name}. {content?.footerRights}</p>
+          </div>
+        </div>
+      </footer>
+    ) : (
+      <Footer config={config} content={content} />
+    )}
 
     {/* One drawer per page, outside the main flow so its fixed positioning is
         never trapped by a transformed ancestor. Rendered only when the cart is
@@ -109,6 +113,5 @@ const fontHref = config.fontUrl?.replace(/["<>]/g, "")
       </>
     )}
 
-    {!hideMobileNav && <MobileNav config={config} content={content} />}
   </body>
 </html>

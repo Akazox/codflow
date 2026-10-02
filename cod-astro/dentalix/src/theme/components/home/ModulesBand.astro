@@ -1,0 +1,44 @@
+---
+import { Icon } from "astro-icon/components";
+import type { StoreFrontContent } from "@/theme/content";
+
+interface Props {
+  content: StoreFrontContent;
+}
+
+const { content: c } = Astro.props;
+const modules = [
+  { icon: "heroicons:calendar-days", label: c.modAgenda },
+  { icon: "heroicons:user-group", label: c.modWaiting },
+  { icon: "heroicons:users", label: c.modPatients },
+  { icon: "heroicons:clipboard-document-list", label: c.modChart },
+  { icon: "heroicons:queue-list", label: c.modPlans },
+  { icon: "heroicons:clipboard-document-check", label: c.modRx },
+  { icon: "heroicons:photo", label: c.modImaging },
+  { icon: "heroicons:document-text", label: c.modBilling },
+  { icon: "heroicons:identification", label: c.modInsurance },
+  { icon: "heroicons:banknotes", label: c.modCash },
+  { icon: "heroicons:beaker", label: c.modLab },
+  { icon: "heroicons:archive-box", label: c.modStock },
+  { icon: "heroicons:chart-bar", label: c.modReports },
+  { icon: "heroicons:shield-check", label: c.modTeam },
+  { icon: "heroicons:bell-alert", label: c.modReminders },
+].filter((m) => m.label);
+---
+
+<section class="py-12 lg:py-16" aria-labelledby="modules-title">
+  <div class="dx-container">
+    <h2 id="modules-title" class="text-center text-[0.9375rem] font-semibold" style="color: var(--clr-text-3)">{c.modulesTitle}</h2>
+  </div>
+  <div class="dx-marquee mt-6">
+    <div class="dx-marquee__track">
+      {[0, 1].map((copy) => (
+        <ul class="dx-marquee__group" aria-hidden={copy === 1 ? "true" : undefined}>
+          {modules.map((m) => (
+            <li class="dx-module"><Icon name={m.icon} aria-hidden="true" />{m.label}</li>
+          ))}
+        </ul>
+      ))}
+    </div>
+  </div>
+</section>

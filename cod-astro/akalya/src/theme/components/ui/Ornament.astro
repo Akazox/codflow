@@ -1,0 +1,85 @@
+---
+/**
+ * Decorative line-art for the Akalya identity: the khatam star, the horseshoe
+ * arch, a sprig, and the four signature ingredients. Inline SVG drawn in
+ * currentColor, so colour always comes from a token on the parent. Purely
+ * decorative — hidden from assistive tech.
+ */
+interface Props {
+  name: "star" | "arch" | "sprig" | "argan" | "ghassoul" | "figue" | "rose";
+  class?: string;
+}
+
+const { name, class: className = "" } = Astro.props;
+const stroke = { fill: "none", stroke: "currentColor", "stroke-width": "1.25", "stroke-linecap": "round", "stroke-linejoin": "round" };
+---
+
+{name === "star" && (
+  <svg class={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+    <rect x="5.5" y="5.5" width="13" height="13" />
+    <rect x="5.5" y="5.5" width="13" height="13" transform="rotate(45 12 12)" />
+  </svg>
+)}
+
+{name === "arch" && (
+  <svg class={className} viewBox="0 0 100 125" preserveAspectRatio="none" aria-hidden="true">
+    <path d="M10 125V80A50 50 0 1 1 90 80V125" fill="none" stroke="currentColor" stroke-width="1" vector-effect="non-scaling-stroke" />
+  </svg>
+)}
+
+{name === "sprig" && (
+  <svg class={className} viewBox="0 0 24 24" {...stroke} aria-hidden="true">
+    <path d="M12 22V6" />
+    <path d="M12 12.5C9 12 6.8 9.8 6.5 6.8c3 .2 5.2 2.4 5.5 5.7Z" />
+    <path d="M12 9.5c3-.5 5.2-2.7 5.5-5.7-3 .2-5.2 2.4-5.5 5.7Z" />
+    <path d="M12 17.5c2.8-.5 4.8-2.6 5.1-5.4-2.8.2-4.8 2.3-5.1 5.4Z" />
+    <path d="M12 20c-2.6-.4-4.5-2.3-4.8-4.9 2.6.2 4.5 2.1 4.8 4.9Z" />
+  </svg>
+)}
+
+{name === "argan" && (
+  <svg class={className} viewBox="0 0 64 64" {...stroke} aria-hidden="true">
+    <path d="M12 54C22 44 33 33 52 12" />
+    <path d="M20 46c-6.5-.6-10.6-4.6-11.4-10.4 6.4.2 10.6 4.2 11.4 10.4Z" />
+    <path d="M27.5 38.5c-.8-6.4 1.6-11.3 6.6-14 .9 6.2-1.5 11.3-6.6 14Z" />
+    <path d="M36 29c-6.4-.8-10.4-4.8-11-10.6 6.3.4 10.4 4.4 11 10.6Z" />
+    <path d="M43.5 21.5c-.6-5.8 1.6-10.2 6.2-12.6.7 5.6-1.5 10.2-6.2 12.6Z" />
+    <path d="M38 38.5c2-1.4 5.8-1.1 8.4 1.6 2.9 3 3.4 7.5 1.2 9.6-2.2 2.1-6.6 1.3-9.4-1.7-2.6-2.8-2.9-7.4-.2-9.5Z" />
+    <path d="M38.2 38.4 33 34" />
+    <path d="M42 43.5c1.2 1.6 2.6 2.6 4.2 3" />
+  </svg>
+)}
+
+{name === "ghassoul" && (
+  <svg class={className} viewBox="0 0 64 64" {...stroke} aria-hidden="true">
+    <path d="M10 38h44c0 9.4-9.8 17-22 17s-22-7.6-22-17Z" />
+    <path d="M18 38c.4-5 4.6-8.4 9.6-8 1.8-3.8 6.4-5.2 10-3 3.2-1.6 7.4-.2 8.8 3.4 3 .6 5.2 3.4 5.2 7.6" />
+    <path d="M26 17c0-3 2.6-5 5.6-5 3.2 0 5.4 2.2 5.4 4.8 0 2.8-2.6 4.2-5.6 4.2S26 19.8 26 17Z" />
+    <path d="M38 9.5c1.2-1.6 3.6-2 5.2-.8 1.6 1.2 1.6 3.4.2 4.6-1.4 1.2-3.6 1.1-4.8-.2-.9-1-1.2-2.5-.6-3.6Z" />
+    <path d="M22 46h20" />
+    <circle cx="28" cy="33.5" r=".6" />
+    <circle cx="36" cy="31" r=".6" />
+    <circle cx="42" cy="34" r=".6" />
+  </svg>
+)}
+
+{name === "figue" && (
+  <svg class={className} viewBox="0 0 64 64" {...stroke} aria-hidden="true">
+    <path d="M32 58c-9.4 0-15-8-15-18.5S23.4 20 32 20s15 9 15 19.5S41.4 58 32 58Z" />
+    <path d="M22.5 21c-3.4 0-5.5-3-5.5-6.4S19.4 8 22.6 8c3.2 0 5.4 3.2 5.4 6.6S26 21 22.5 21Z" />
+    <path d="M41.5 19.5c-3.4 0-5.5-3-5.5-6.4s2.4-6.6 5.6-6.6c3.2 0 5.4 3.2 5.4 6.6s-2 6.4-5.5 6.4Z" />
+    <path d="M20 9.5 18.6 7.6M24.4 8.6l.8-2M39 7.8l-1.2-1.9M43.6 7l.9-2" />
+    <path d="M26 32l-1.6-1M37 30l1.6-1M30 42l-1.6.6M35 47l1.4 1M27 51l-1.4.8M39 39l1.6.4" />
+  </svg>
+)}
+
+{name === "rose" && (
+  <svg class={className} viewBox="0 0 64 64" {...stroke} aria-hidden="true">
+    <path d="M32 31c-7 0-11.5-4.6-11.5-10.4C20.5 14.4 25.4 8 32 8s11.5 6.4 11.5 12.6C43.5 26.4 39 31 32 31Z" />
+    <path d="M32 25c-3.4 0-5.6-2.4-5.6-5.2 0-3 2.6-5.6 5.6-5.6 2.8 0 4.8 2 4.8 4.4 0 2.2-1.6 3.6-3.6 3.6-1.6 0-2.6-1-2.6-2.4" />
+    <path d="M22 18c2.4 1.2 4.2 1.4 6 .6M42 18c-2.2 1.4-4.2 1.8-6.2 1" />
+    <path d="M32 31v26" />
+    <path d="M32 46c-6.6 0-11-3.4-12.6-8.8 6.4-.8 10.8 2.4 12.6 8.8Z" />
+    <path d="M32 41c5-.2 8.4-2.8 9.6-7-4.8-.4-8.2 2.2-9.6 7Z" />
+  </svg>
+)}

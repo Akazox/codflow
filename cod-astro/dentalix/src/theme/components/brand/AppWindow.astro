@@ -1,0 +1,23 @@
+---
+import { Icon } from "astro-icon/components";
+
+interface Props {
+  title?: string;
+  class?: string;
+}
+
+const { title, class: className } = Astro.props;
+---
+
+<div class:list={["dx-window", className]}>
+  <div class="dx-window__bar">
+    <span class="dx-window__dots" aria-hidden="true"><i></i><i></i><i></i></span>
+    <span class="dx-window__title">
+      {title && (
+        <span><Icon name="heroicons:lock-closed" aria-hidden="true" />{title}</span>
+      )}
+    </span>
+    <span class="w-10" aria-hidden="true"></span>
+  </div>
+  <slot />
+</div>

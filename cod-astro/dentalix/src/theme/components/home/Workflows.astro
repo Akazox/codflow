@@ -1,0 +1,254 @@
+---
+import { Icon } from "astro-icon/components";
+import Odontogram from "@/theme/components/brand/Odontogram.astro";
+import type { StoreFrontContent } from "@/theme/content";
+import { fmt, fill } from "@/theme/utils/plans";
+
+interface Props {
+  content: StoreFrontContent;
+  currency: string;
+}
+
+const { content: c, currency } = Astro.props;
+
+const flows = [
+  { id: "agenda", kicker: c.flow1Kicker, title: c.flow1Title, desc: c.flow1Desc, points: [c.flow1Point1, c.flow1Point2, c.flow1Point3, c.flow1Point4] },
+  { id: "clinical", kicker: c.flow2Kicker, title: c.flow2Title, desc: c.flow2Desc, points: [c.flow2Point1, c.flow2Point2, c.flow2Point3, c.flow2Point4] },
+  { id: "billing", kicker: c.flow3Kicker, title: c.flow3Title, desc: c.flow3Desc, points: [c.flow3Point1, c.flow3Point2, c.flow3Point3, c.flow3Point4] },
+  { id: "practice", kicker: c.flow4Kicker, title: c.flow4Title, desc: c.flow4Desc, points: [c.flow4Point1, c.flow4Point2, c.flow4Point3, c.flow4Point4] },
+].filter((f) => f.title);
+
+const icons: Record<string, string> = {
+  agenda: "heroicons:calendar-days",
+  clinical: "heroicons:clipboard-document-list",
+  billing: "heroicons:document-text",
+  practice: "heroicons:building-office-2",
+};
+
+const week = [
+  [{ r: 0, s: 2, t: "teal" }, { r: 3, s: 1, t: "amber" }, { r: 5, s: 2, t: "indigo" }],
+  [{ r: 1, s: 1, t: "rose" }, { r: 2, s: 2, t: "sky" }, { r: 6, s: 1, t: "teal" }],
+  [{ r: 0, s: 1, t: "violet" }, { r: 2, s: 1, t: "teal" }, { r: 4, s: 2, t: "amber" }],
+  [{ r: 1, s: 2, t: "indigo" }, { r: 4, s: 1, t: "rose" }, { r: 5, s: 2, t: "teal" }],
+  [{ r: 0, s: 1, t: "sky" }, { r: 3, s: 2, t: "violet" }],
+];
+const waiting = [
+  { who: c.mockPatient3, act: c.mockAppt3, status: c.mockWaitingStatus1, tone: "teal", av: "--viz-teal" },
+  { who: c.mockPatient2, act: c.mockAppt2, status: c.mockWaitingStatus2, tone: "amber", av: "--viz-amber" },
+  { who: c.mockPatient4, act: c.mockAppt6, status: c.mockWaitingStatus3, tone: "indigo", av: "--viz-indigo" },
+];
+const docs = [
+  { kind: c.mockDocQuote, amount: 64000, icon: "heroicons:clipboard-document-list" },
+  { kind: c.mockDocInvoice, amount: 64000, icon: "heroicons:document-text", active: true },
+  { kind: c.mockDocReceipt, amount: 32000, icon: "heroicons:check-badge" },
+];
+const instalments = [
+  { label: "1/2", amount: 32000, done: true },
+  { label: "2/2", amount: 32000, done: false },
+];
+const initial = (name: string) => name.trim().charAt(0);
+---
+
+<section id="features" class="dx-section" aria-labelledby="features-title">
+  <div class="dx-container">
+    <div class="dx-section-head">
+      <span class="dx-kicker">{c.featuresKicker}</span>
+      <h2 id="features-title" class="dx-h2">{c.featuresTitle}</h2>
+      <p class="dx-lead mt-5">{c.featuresSub}</p>
+    </div>
+
+    {flows.map((flow, index) => (
+      <div class:list={["dx-flow", index % 2 === 1 && "dx-flow--reverse"]}>
+        <div class="dx-flow__text">
+          <span class="dx-icon-tile dx-icon-tile--lg"><Icon name={icons[flow.id]} aria-hidden="true" /></span>
+          <p class="dx-kicker mt-5 !mb-2">{flow.kicker}</p>
+          <h3 class="dx-h2 !text-[clamp(1.625rem,1.3rem+1.2vw,2.25rem)]">{flow.title}</h3>
+          <p class="dx-lead mt-4">{flow.desc}</p>
+          <ul class="dx-check-list mt-7">
+            {flow.points.filter(Boolean).map((point) => (
+              <li><span class="dx-check-list__icon"><Icon name="heroicons:check" aria-hidden="true" /></span>{point}</li>
+            ))}
+          </ul>
+        </div>
+
+        <div class="dx-flow__visual" aria-hidden="true">
+          {flow.id === "agenda" && (
+            <div class="relative pb-20 sm:pb-12">
+              <div class="dx-panel">
+                <div class="dx-panel__head">
+                  <span class="dx-panel__title"><Icon name="heroicons:calendar-days" />{c.modAgenda}</span>
+                  <span class="dx-chip dx-chip--primary">{c.mockToday}</span>
+                </div>
+                <div class="grid grid-cols-5 gap-1.5">
+                  {week.map((day) => (
+                    <div class="dx-agenda__col !min-h-[12rem]" style="--rows: 7; background-size: 100% calc(100% / 7)">
+                      {day.map((a, i) => (
+                        <div class={`dx-appt dx-appt--${a.t} !p-1`} style={`top: calc(${(a.r / 7) * 100}% + 2px); height: calc(${(a.s / 7) * 100}% - 4px); animation-delay: ${i * 90}ms`}></div>
+                      ))}
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div class="dx-panel absolute bottom-0 end-0 w-[88%] sm:w-[19rem] !shadow-lg">
+                <div class="dx-panel__head !mb-1">
+                  <span class="dx-panel__title"><Icon name="heroicons:user-group" />{c.modWaiting}</span>
+                </div>
+                {waiting.map((w) => (
+                  <div class="dx-row">
+                    <span class="dx-avatar" style={`--av-bg: var(${w.av}-soft); --av-fg: var(${w.av})`}>{initial(w.who)}</span>
+                    <span class="dx-row__main"><b>{w.who}</b><small>{w.act}</small></span>
+                    <span class={`dx-status dx-status--${w.tone}`}>{w.status}</span>
+                  </div>
+                ))}
+              </div>
+              <div class="dx-float dx-toast top-[-0.5rem] start-[-0.25rem] sm:start-[-1rem] !p-2.5 hidden sm:flex">
+                <span class="dx-toast__icon" style="background: var(--clr-accent-tint); color: var(--clr-accent-strong)"><Icon name="heroicons:bell-alert" /></span>
+                <span><b>{c.mockReminderTitle}</b><small>{c.mockReminderSub}</small></span>
+              </div>
+            </div>
+          )}
+
+          {flow.id === "clinical" && (
+            <div class="grid gap-4">
+              <div class="dx-panel">
+                <div class="dx-panel__head">
+                  <span class="dx-panel__title"><Icon name="heroicons:clipboard-document-list" />{c.modChart}</span>
+                  <span class="dx-chip">{c.mockChartSub}</span>
+                </div>
+                <Odontogram showNumbers={true} selected={36} />
+                <div class="dx-legend !mt-3">
+                  <span style="--legend: var(--tooth-caries)"><i></i>{c.legendCaries}</span>
+                  <span style="--legend: var(--tooth-restoration)"><i></i>{c.legendRestoration}</span>
+                  <span style="--legend: var(--tooth-crown)"><i></i>{c.legendCrown}</span>
+                  <span style="--legend: var(--tooth-endo)"><i></i>{c.legendEndo}</span>
+                  <span style="--legend: var(--tooth-implant)"><i></i>{c.legendImplant}</span>
+                  <span style="--legend: var(--tooth-missing)"><i></i>{c.legendMissing}</span>
+                </div>
+              </div>
+              <div class="dx-panel sm:ms-10">
+                <div class="dx-panel__head">
+                  <span class="dx-panel__title"><Icon name="heroicons:queue-list" />{c.modPlans}</span>
+                  <span class="dx-avatar" style="--av-bg: var(--viz-violet-soft); --av-fg: var(--viz-violet)">{initial(c.mockPatient5)}</span>
+                </div>
+                {[{ label: c.mockPlanPhase1, pct: 75 }, { label: c.mockPlanPhase2, pct: 20 }].map((phase) => (
+                  <div class="mt-3 first:mt-0">
+                    <div class="mb-1.5 flex items-center justify-between gap-2">
+                      <span class="font-semibold" style="color: var(--clr-text)">{phase.label}</span>
+                      <span class="tabular" style="color: var(--clr-text-3)">{fill(c.mockPlanDone, { n: phase.pct })}</span>
+                    </div>
+                    <div class="dx-progress"><i style={`width: ${phase.pct}%`}></i></div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {flow.id === "billing" && (
+            <div class="grid gap-4">
+              <div class="dx-panel">
+                <div class="dx-panel__head">
+                  <span class="dx-panel__title"><Icon name="heroicons:document-text" />{c.modBilling}</span>
+                  <span class="dx-avatar" style="--av-bg: var(--viz-amber-soft); --av-fg: var(--clr-warning)">{initial(c.mockPatient2)}</span>
+                </div>
+                <div class="dx-pipeline">
+                  {docs.map((doc) => (
+                    <div class="dx-doc" data-active={doc.active ? "" : undefined}>
+                      <div class="flex items-center justify-between">
+                        <span class="dx-doc__kind">{doc.kind}</span>
+                        <Icon name={doc.icon} class="h-3.5 w-3.5" style="color: var(--clr-primary)" />
+                      </div>
+                      <div class="dx-doc__line w-4/5"></div>
+                      <div class="dx-doc__line w-3/5"></div>
+                      <div class="dx-doc__amount">{fmt(doc.amount)} <span class="text-[0.625rem] font-semibold" style="color: var(--clr-text-3)">{currency}</span></div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div class="grid gap-4 sm:grid-cols-2">
+                <div class="dx-panel">
+                  <div class="dx-panel__head !mb-2">
+                    <span class="dx-panel__title"><Icon name="heroicons:identification" />{c.mockCnasLabel}</span>
+                  </div>
+                  <div class="dx-row !py-1.5">
+                    <span class="dx-row__main"><b>{c.mockPatient2}</b><small>{c.modInsurance}</small></span>
+                    <Icon name="heroicons:check-circle" class="h-5 w-5" style="color: var(--clr-success)" />
+                  </div>
+                </div>
+                <div class="dx-panel">
+                  <div class="dx-panel__head !mb-2">
+                    <span class="dx-panel__title"><Icon name="heroicons:banknotes" />{c.modCash}</span>
+                  </div>
+                  {instalments.map((p) => (
+                    <div class="dx-row !py-1.5">
+                      <span class="dx-row__main"><b class="tabular">{p.label}</b></span>
+                      <span class="font-semibold tabular" style="color: var(--clr-text)">{fmt(p.amount)} {currency}</span>
+                      <Icon name={p.done ? "heroicons:check-circle" : "heroicons:clock"} class="h-4 w-4" style={p.done ? "color: var(--clr-success)" : "color: var(--clr-text-3)"} />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {flow.id === "practice" && (
+            <div class="grid gap-4 sm:grid-cols-2">
+              <div class="dx-panel">
+                <div class="dx-panel__head !mb-2">
+                  <span class="dx-panel__title"><Icon name="heroicons:beaker" />{c.modLab}</span>
+                </div>
+                <div class="dx-row">
+                  <span class="dx-row__main"><b>{c.mockLabItem}</b><small>{c.mockPatient5}</small></span>
+                  <span class="dx-status dx-status--amber">{c.mockLabProgress}</span>
+                </div>
+                <div class="dx-row">
+                  <span class="dx-row__main"><b>{c.mockLabItem2}</b><small>{c.mockPatient2}</small></span>
+                  <span class="dx-status dx-status--teal">{c.mockLabReceived}</span>
+                </div>
+              </div>
+              <div class="dx-panel">
+                <div class="dx-panel__head !mb-2">
+                  <span class="dx-panel__title"><Icon name="heroicons:archive-box" />{c.modStock}</span>
+                </div>
+                {[{ item: c.mockStockItem, pct: 18, low: true }, { item: c.mockStockItem2, pct: 64, low: false }].map((s) => (
+                  <div class="mt-2.5 first:mt-0">
+                    <div class="mb-1 flex items-center justify-between gap-2">
+                      <span class="font-semibold" style="color: var(--clr-text)">{s.item}</span>
+                      {s.low && <span class="dx-status dx-status--amber">{c.mockStockLow}</span>}
+                    </div>
+                    <div class="dx-progress"><i style={`width: ${s.pct}%${s.low ? "; background: var(--viz-amber)" : ""}`}></i></div>
+                  </div>
+                ))}
+              </div>
+              <div class="dx-panel">
+                <div class="dx-panel__head !mb-2">
+                  <span class="dx-panel__title"><Icon name="heroicons:shield-check" />{c.modTeam}</span>
+                </div>
+                {[
+                  { who: c.mockDoctor1, role: c.mockRole1, av: "--viz-cyan" },
+                  { who: c.mockPatient4, role: c.mockRole2, av: "--viz-violet" },
+                  { who: c.mockPatient6, role: c.mockRole3, av: "--viz-amber" },
+                ].map((m) => (
+                  <div class="dx-row !py-1.5">
+                    <span class="dx-avatar !h-6 !w-6" style={`--av-bg: var(${m.av}-soft); --av-fg: var(${m.av})`}>{initial(m.who)}</span>
+                    <span class="dx-row__main"><b>{m.who}</b></span>
+                    <span class="dx-chip !h-6 !text-[0.625rem]">{m.role}</span>
+                  </div>
+                ))}
+              </div>
+              <div class="dx-panel">
+                <div class="dx-panel__head !mb-1">
+                  <span class="dx-panel__title"><Icon name="heroicons:chart-bar" />{c.modReports}</span>
+                </div>
+                <span class="text-[0.6875rem]" style="color: var(--clr-text-3)">{c.mockReportsTitle}</span>
+                <div class="font-bold text-[1rem] tabular" style="color: var(--clr-text)">{fmt(684500)} {currency}</div>
+                <div class="dx-bars mt-2">
+                  {[32, 48, 40, 62, 55, 70, 64, 86].map((h) => <i style={`height: ${h}%`}></i>)}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    ))}
+  </div>
+</section>

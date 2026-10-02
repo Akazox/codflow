@@ -1,54 +1,78 @@
 ---
+/**
+ * Above-the-fold buy box: title, live price, size & frame pickers, the
+ * jump-to-form call to action and the trust row. #price-display-mobile is the
+ * element product.ts reprices; the compare-at price and the saving are
+ * repainted per variant by art-preview.ts.
+ */
 import type { Product } from "@/core/api/types";
+import type { StoreFrontContent } from "@/theme/config/content";
 import { Icon } from "astro-icon/components";
-import ProductDescription from "@/theme/components/product/ProductDescription.astro";
+import VariantSelector from "@/theme/components/order/VariantSelector.astro";
+import TrustRow from "@/theme/components/art/TrustRow.astro";
+import { formatPrice } from "@/theme/utils/art-options";
 
 interface Props {
   product: Product;
+  content: StoreFrontContent;
   basePrice: number;
   comparePrice: number | null;
   cur: string;
   isLowStock: boolean;
   lowStockText: string;
-  isDesktop?: boolean;
+  isOutOfStock: boolean;
+  swatchImage: string | null;
 }
 
-const { product, basePrice, comparePrice, cur, isLowStock, lowStockText, isDesktop = false } = Astro.props;
+const { product, content, basePrice, comparePrice, cur, isLowStock, lowStockText, isOutOfStock, swatchImage } = Astro.props;
 const hasDiscount = comparePrice != null && comparePrice > basePrice;
-
-function fmt(n: number) {
-  return n.toLocaleString("ar-DZ");
-}
+const discountPct = hasDiscount ? Math.round((1 - basePrice / comparePrice!) * 100) : 0;
+const teaser = product.descriptionPlain ?? (product.descriptionFormat === "html" ? null : product.description);
 ---
 
-<div class:list={[isDesktop ? "hidden lg:block" : "lg:hidden", "mb-8"]}>
-  <h1 class:list={[isDesktop ? "text-3xl" : "text-2xl", "font-black leading-tight mb-3 tracking-tight"]} style="color: var(--clr-text)">
-    {product.name}
-  </h1>
-  
-  <div class="flex items-baseline gap-4">
-    <span class:list={[isDesktop ? "text-4xl" : "text-3xl", "font-black"]} style="color: var(--clr-primary)" id={isDesktop ? "price-display-desktop" : "price-display-mobile"}>
-      {fmt(basePrice)} <span class:list={[isDesktop ? "text-2xl" : "text-lg", "font-bold"]}>{cur}</span>
-    </span>
-    {hasDiscount && (
-      <span class:list={[isDesktop ? "text-xl" : "text-base", "line-through font-semibold"]} style="color: var(--clr-text-2)">
-        {fmt(comparePrice!)} {cur}
-      </span>
+<div class="wd-pdp-info">
+  <nav class="wd-crumbs" aria-label={content.breadcrumbHome}>
+    <a href="/products">{content.navGallery}</a>
+    {product.category && (
+      <>
+        <span aria-hidden="true">/</span>
+        <a href={`/category/${product.category.slug}`}>{product.category.name}</a>
+      </>
     )}
+  </nav>
+
+  <h1 class="wd-display wd-pdp-title">{product.name}</h1>
+  <p class="wd-eyebrow wd-eyebrow--plain mt-2">{content.pdpEyebrow}</p>
+
+  <div class="wd-price-row">
+    <span class="wd-price" id="price-display-mobile">
+      {formatPrice(basePrice)} <span class="wd-price-cur">{cur}</span>
+    </span>
+    <span class="wd-price-compare" data-compare-display hidden={!hasDiscount}>
+      {hasDiscount ? `${formatPrice(comparePrice!)} ${cur}` : ""}
+    </span>
+    <span class="wd-save" data-save-badge data-template={content.offerSaveBadge} hidden={!hasDiscount}>
+      {content.offerSaveBadge.replace("{n}", String(discountPct))}
+    </span>
   </div>
 
-  {!isDesktop && isLowStock && (
-    <div class="mt-4 inline-flex items-center gap-2 bg-orange-50 text-orange-600 px-3 py-1.5 rounded-xl text-[0.8125rem] font-bold border border-orange-100">
-      <Icon name="heroicons:exclamation-triangle" class="w-4 h-4 shrink-0" />
-      {lowStockText}
-    </div>
+  {teaser && <p class="wd-lead wd-pdp-desc line-clamp-3">{teaser}</p>}
+
+  <hr class="wd-pdp-rule" />
+
+  <VariantSelector product={product} content={content} swatchImage={swatchImage} />
+
+  {isOutOfStock ? (
+    <button type="button" class="btn-primary wd-pdp-cta" disabled>{content.outOfStock}</button>
+  ) : (
+    <a href="#order-section" class="btn-primary wd-pdp-cta">
+      <span>{content.orderCta}</span>
+      <span class="wd-cta-sub">{content.orderCtaSubtext}</span>
+      <Icon name="heroicons:arrow-down" aria-hidden="true" />
+    </a>
   )}
 
-  <div class="mt-6">
-    <ProductDescription
-      description={product.description}
-      format={product.descriptionFormat}
-      isDesktop={isDesktop}
-    />
-  </div>
+  {isLowStock && <p class="wd-stock-note">{lowStockText}</p>}
+
+  <TrustRow content={content} class="wd-pdp-trust" />
 </div>

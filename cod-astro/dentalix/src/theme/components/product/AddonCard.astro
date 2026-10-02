@@ -1,0 +1,37 @@
+---
+import { Icon } from "astro-icon/components";
+import type { StoreFrontContent } from "@/theme/content";
+import { fmt, planPoints } from "@/theme/utils/plans";
+
+interface Props {
+  product: any;
+  content: StoreFrontContent;
+  currency: string;
+}
+
+const { product, content: c, currency } = Astro.props;
+const { tagline, points } = planPoints(product.descriptionPlain ?? product.description);
+const summary = points.length > 0 ? `${tagline ?? ""}${tagline ? " : " : ""}${points.join(", ")}` : tagline;
+const hasCompare = product.compareAtPrice != null && product.compareAtPrice > product.price;
+const isOutOfStock = product.trackInventory && product.inventory === 0;
+---
+
+<article class="dx-addon">
+  <span class="dx-icon-tile dx-icon-tile--lg"><Icon name="heroicons:academic-cap" aria-hidden="true" /></span>
+  <div class="min-w-0">
+    <p class="dx-kicker !mb-1">{c.pricingAddonKicker}</p>
+    <h3 class="text-[1.125rem] font-bold" style="color: var(--clr-text)">{product.name}</h3>
+    {summary && <p class="dx-body mt-1.5 max-w-2xl">{product.descriptionPlain ?? summary}</p>}
+  </div>
+  <div class="flex flex-col gap-3 md:items-end">
+    <p class="flex items-baseline gap-1.5 md:justify-end">
+      <span class="text-[1.625rem] font-extrabold tabular" style="color: var(--clr-text); font-family: var(--font-display)">{fmt(product.price)}</span>
+      <span class="font-bold" style="color: var(--clr-text)">{currency}</span>
+      {hasCompare && <span class="dx-price__was ms-1">{fmt(product.compareAtPrice)}</span>}
+    </p>
+    <a href={`/products/${product.handle}`} class="dx-btn dx-btn--secondary" aria-disabled={isOutOfStock ? "true" : undefined}>
+      {isOutOfStock ? c.outOfStock : c.pricingAddonCta}
+      {!isOutOfStock && <Icon name="heroicons:arrow-right" class="dx-flip" aria-hidden="true" />}
+    </a>
+  </div>
+</article>

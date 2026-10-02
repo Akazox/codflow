@@ -1,0 +1,48 @@
+---
+/** Eyebrow (with the khatam star) + serif title + lede, optionally a "view all" link. */
+import { Icon } from "astro-icon/components";
+import Ornament from "@/theme/components/ui/Ornament.astro";
+
+interface Props {
+  eyebrow?: string;
+  title: string;
+  sub?: string;
+  href?: string;
+  linkLabel?: string;
+  align?: "start" | "center";
+  id?: string;
+  size?: "l" | "m";
+  tone?: "light" | "dark";
+}
+
+const { eyebrow, title, sub, href, linkLabel, align = "start", id, size = "l", tone = "light" } = Astro.props;
+const centered = align === "center";
+---
+
+<div class:list={[
+  "flex flex-col gap-6 mb-10 lg:mb-14",
+  centered ? "items-center text-center" : "md:flex-row md:items-end md:justify-between",
+]}>
+  <div class:list={["max-w-2xl", centered && "mx-auto"]}>
+    {eyebrow && (
+      <p class="t-eyebrow mb-4" style={tone === "dark" ? "color: var(--clr-on-dark-2)" : undefined}>
+        <Ornament name="star" class="w-2 h-2 akl-ornament" />
+        {eyebrow}
+      </p>
+    )}
+    <h2 id={id} class={size === "l" ? "t-display-l" : "t-display-m"} style={tone === "dark" ? "color: var(--clr-on-dark)" : undefined}>
+      {title}
+    </h2>
+    {sub && (
+      <p class:list={["t-lede mt-4", centered && "mx-auto max-w-xl"]} style={tone === "dark" ? "color: var(--clr-on-dark-2)" : undefined}>
+        {sub}
+      </p>
+    )}
+  </div>
+  {href && linkLabel && (
+    <a href={href} class="link-arrow shrink-0">
+      {linkLabel}
+      <Icon name="heroicons:arrow-right" />
+    </a>
+  )}
+</div>

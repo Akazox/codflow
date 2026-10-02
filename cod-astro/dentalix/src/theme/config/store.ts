@@ -1,7 +1,7 @@
 // ╔══════════════════════════════════════════════════════════════════════╗
-// ║  CUSTOMIZE HERE (Custom mode) — DEFAULT_CONFIG only                  ║
-// ║  Edit DEFAULT_CONFIG to change fallback colors/font/meta when the    ║
-// ║  API is unreachable. All other code in this file is core engine.     ║
+// ║  CUSTOMIZE HERE — DEFAULT_CONFIG only                                ║
+// ║  Dentalix brand values. The live palette lives in global.css; these  ║
+// ║  mirror it for <meta theme-color> and the API-unreachable fallback.  ║
 // ╚══════════════════════════════════════════════════════════════════════╝
 /**
  * Per-request store data helpers.
@@ -15,18 +15,18 @@ import type { StoreFrontContent } from "@/theme/content";
 
 export const DEFAULT_CONFIG: StoreConfig = {
   id: "",
-  name: "متجري",
+  name: "Dentalix",
   domain: null,
   logoUrl: null,
   themeId: "dentalix",
-  primaryColor: "#7c3aed",
-  accentColor: "#f59e0b",
-  bgColor: "#f8f8f8",
-  fontFamily: "Cairo, sans-serif",
+  primaryColor: "#0e7490",
+  accentColor: "#14b8a6",
+  bgColor: "#ffffff",
+  fontFamily: "Inter, IBM Plex Sans Arabic, sans-serif",
   fontUrl: null,
-  lang: "ar",
+  lang: "fr",
   currency: "DZD",
-  currencySymbol: "دج",
+  currencySymbol: "DA",
   contentJson: null,
   metaTitle: null,
   metaDescription: null,

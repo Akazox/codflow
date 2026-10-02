@@ -1,8 +1,13 @@
 ---
+/**
+ * Footer — espresso band with the brand line, house links, the store's real
+ * policy pages (config.pages, never a hardcoded label), optional contact from
+ * the legal profile, and the store's commitments.
+ */
 import { Image } from "astro:assets";
 import type { StoreConfig } from "@/core/api/types";
 import type { StoreFrontContent } from "@/theme/config/content";
-import { Icon } from "astro-icon/components";
+import Ornament from "@/theme/components/ui/Ornament.astro";
 
 interface Props {
   config: StoreConfig;
@@ -10,103 +15,117 @@ interface Props {
 }
 const { config, content } = Astro.props;
 const year = new Date().getFullYear();
+const nameScript = /[؀-ۿ]/.test(config.name) ? "ar" : "latin";
 
-const badges = [
-  { icon: "heroicons:credit-card", title: content?.trust1Title ?? "الدفع عند الاستلام", sub: content?.trust1Sub ?? "بدون دفع مسبق" },
-  { icon: "heroicons:truck",       title: content?.trust2Title ?? "توصيل لجميع الولايات", sub: content?.trust2Sub ?? "58 ولاية" },
-  { icon: "heroicons:bolt",        title: content?.trust3Title ?? "تأكيد سريع", sub: content?.trust3Sub ?? "خلال 24 ساعة" },
+const houseLinks = [
+  { label: content?.navHome, href: "/" },
+  { label: content?.navProducts, href: "/products" },
+  { label: content?.navBestSellers, href: "/#best-sellers" },
+  { label: content?.navRituals, href: "/#rituel" },
+  { label: content?.navIngredients, href: "/#ingredients" },
 ];
+
+const commitments = [
+  content?.trust1Title,
+  content?.trust2Title,
+  content?.trust3Title,
+  content?.trust4Title,
+].filter(Boolean);
+
+const phone = config.legalContact?.contactPhone ?? null;
+const email = config.legalContact?.contactEmail ?? null;
+const hasInfoColumn = config.pages.length > 0 || Boolean(phone) || Boolean(email);
 ---
 
-<footer class="mt-8 border-t border-black/[0.04] pb-16 sm:pb-4" style="background: var(--clr-surface)">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
-    <div class="grid grid-cols-1 md:grid-cols-12 gap-6 sm:gap-8">
-      {/* Brand Column */}
-      <div class="md:col-span-4 space-y-3">
-        <a href="/" class="flex items-center gap-3 active:scale-95 transition-transform">
+<footer id="site-footer" class="akl-footer relative overflow-hidden mt-auto" style="padding-bottom: var(--safe-bottom)">
+  <Ornament name="arch" class="pointer-events-none absolute -top-24 end-[-6rem] w-[22rem] h-[27rem] opacity-[0.12] hidden sm:block" />
+
+  <div class="akl-container relative pt-16 pb-10 lg:pt-24">
+    <div class="grid gap-12 lg:grid-cols-12">
+      <div class="lg:col-span-5">
+        <a href="/" class="inline-flex" aria-label={config.name}>
           {config.logoUrl ? (
             <Image
               src={config.logoUrl}
               alt={config.name}
-              width={120}
-              height={32}
+              width={140}
+              height={40}
               format="webp"
               quality={90}
-              class="h-8 w-auto object-contain"
+              class="h-9 w-auto object-contain"
               loading="lazy"
             />
           ) : (
-            <span class="text-xl font-black uppercase tracking-tighter" style="color: var(--clr-primary)">{config.name}</span>
+            <span class="akl-wordmark" data-script={nameScript} style="color: var(--clr-on-dark)">{config.name}</span>
           )}
         </a>
-        <p class="text-[0.8125rem] sm:text-[0.875rem] font-medium leading-relaxed max-w-sm" style="color: var(--clr-text-2)">
+        {content?.footerTagline && (
+          <p class="font-display mt-8 text-[2rem] leading-[1.15] lg:text-[2.6rem] max-w-[18ch]" style="color: var(--clr-on-dark)">
+            {content.footerTagline}
+          </p>
+        )}
+        <p class="mt-5 max-w-sm text-[0.9375rem] leading-relaxed" style="color: var(--clr-on-dark-2)">
           {content?.footerAbout}
         </p>
+        {config.whatsapp && content && (
+          <a
+            href={config.whatsapp.href}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="mt-7 inline-flex items-center gap-2.5 h-11 px-5 rounded-full text-[0.875rem] font-medium transition-colors"
+            style="border: 1px solid color-mix(in srgb, var(--clr-on-dark) 30%, transparent); color: var(--clr-on-dark)"
+          >
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true"><path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.16-.17.2-.35.22-.64.07-.3-.15-1.26-.46-2.39-1.47-.88-.79-1.48-1.76-1.65-2.06-.17-.3-.02-.46.13-.6.13-.14.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.03-.52-.07-.15-.67-1.61-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.21 3.07c.15.2 2.1 3.2 5.08 4.49.71.31 1.26.49 1.7.63.71.23 1.36.2 1.87.12.57-.09 1.76-.72 2-1.41.25-.7.25-1.29.18-1.41-.08-.13-.28-.2-.57-.35M12.05 21.79h-.01a9.87 9.87 0 0 1-5.03-1.38l-.36-.21-3.74.98 1-3.65-.24-.37a9.86 9.86 0 0 1-1.51-5.26c0-5.45 4.44-9.88 9.89-9.88a9.82 9.82 0 0 1 9.88 9.9c0 5.44-4.44 9.87-9.88 9.87m8.41-18.3A11.82 11.82 0 0 0 12.05 0C5.5 0 .16 5.34.16 11.89c0 2.1.55 4.14 1.59 5.95L.06 24l6.3-1.65a11.88 11.88 0 0 0 5.68 1.45h.01c6.55 0 11.89-5.34 11.89-11.89 0-3.18-1.24-6.17-3.48-8.41Z"/></svg>
+            {content.promoCtaText}
+          </a>
+        )}
       </div>
 
-      {/* Links Columns */}
-      <div class="md:col-span-8 grid grid-cols-2 sm:grid-cols-3 gap-6">
+      <div class="lg:col-span-7 grid grid-cols-2 sm:grid-cols-3 gap-x-8 gap-y-10">
         <div>
-          <h3 class="text-[0.6875rem] sm:text-[0.75rem] font-black uppercase tracking-widest mb-3 sm:mb-4" style="color: var(--clr-text)">
-            {content?.footerQuickLinks}
-          </h3>
-          <ul class="space-y-2.5">
-            {[
-              { label: content?.navHome, href: "/" },
-              { label: content?.navProducts, href: "/products" },
-              { label: content?.navBestSellers, href: "/#best-sellers" },
-              { label: content?.navNewArrivals, href: "/#new-arrivals" },
-            ].map((link) => (
-              <li>
-                <a href={link.href} class="text-[0.8125rem] sm:text-[0.875rem] font-bold transition-all hover:text-primary" style="color: var(--clr-text-2)">
-                  {link.label}
-                </a>
-              </li>
+          <h3 class="akl-footer-head mb-5">{content?.footerQuickLinks}</h3>
+          <ul class="space-y-3">
+            {houseLinks.map((link) => (
+              <li><a href={link.href} class="akl-footer-link">{link.label}</a></li>
             ))}
           </ul>
         </div>
 
-        <div>
-          <h3 class="text-[0.6875rem] sm:text-[0.75rem] font-black uppercase tracking-widest mb-3 sm:mb-4" style="color: var(--clr-text)">
-            {content?.footerSupport}
-          </h3>
-          <ul class="space-y-2.5">
-            {config.pages.map((page) => (
-              <li>
-                <a href={`/pages/${page.slug}`} class="text-[0.8125rem] sm:text-[0.875rem] font-bold transition-all hover:text-primary" style="color: var(--clr-text-2)">
-                  {page.title}
-                </a>
-              </li>
-            ))}
-          </ul>
-        </div>
+        {hasInfoColumn && (
+          <div>
+            <h3 class="akl-footer-head mb-5">{content?.footerSupport}</h3>
+            <ul class="space-y-3">
+              {config.pages.map((page) => (
+                <li><a href={`/pages/${page.slug}`} class="akl-footer-link">{page.title}</a></li>
+              ))}
+              {phone && (
+                <li><a href={`tel:${phone.replace(/\s+/g, "")}`} class="akl-footer-link" dir="ltr">{content?.footerCallUs} · {phone}</a></li>
+              )}
+              {email && (
+                <li><a href={`mailto:${email}`} class="akl-footer-link">{content?.footerWriteUs}</a></li>
+              )}
+            </ul>
+          </div>
+        )}
 
         <div class="col-span-2 sm:col-span-1">
-          <h3 class="text-[0.6875rem] sm:text-[0.75rem] font-black uppercase tracking-widest mb-3 sm:mb-4" style="color: var(--clr-text)">
-            {content?.trust1Title}
-          </h3>
-          <div class="space-y-2.5">
-            {badges.map((b) => (
-              <div class="flex items-center gap-2.5 group">
-                <div class="w-8 h-8 sm:w-9 sm:h-9 shrink-0 rounded-xl flex items-center justify-center bg-black/[0.02] border border-black/[0.04] text-primary">
-                  <Icon name={b.icon} class="w-4 h-4" />
-                </div>
-                <div class="min-w-0">
-                  <p class="text-[0.6875rem] sm:text-[0.6875rem] font-black leading-tight" style="color: var(--clr-text)">{b.title}</p>
-                  <p class="text-[0.5625rem] sm:text-[0.625rem] font-bold" style="color: var(--clr-text-2)">{b.sub}</p>
-                </div>
-              </div>
+          <h3 class="akl-footer-head mb-5">{content?.footerCommitments}</h3>
+          <ul class="space-y-3">
+            {commitments.map((line) => (
+              <li class="flex items-center gap-3 text-[0.9375rem]" style="color: var(--clr-on-dark-2)">
+                <Ornament name="star" class="w-2 h-2 shrink-0 akl-ornament" />
+                {line}
+              </li>
             ))}
-          </div>
+          </ul>
         </div>
       </div>
     </div>
 
-    {/* Bottom Bar */}
-    <div class="border-t border-black/[0.04] mt-6 sm:mt-8 pt-4 sm:pt-5 text-center">
-      <p class="text-[0.6875rem] sm:text-[0.75rem] font-bold" style="color: var(--clr-text-2)">
-        &copy; {year} {config.name}. {content?.footerRights}
-      </p>
+    <div class="akl-footer-rule mt-16"></div>
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-6 text-[0.8125rem]" style="color: var(--clr-on-dark-2)">
+      <p>&copy; {year} {config.name}. {content?.footerRights}</p>
+      <p>{content?.announcementText}</p>
     </div>
   </div>
 </footer>

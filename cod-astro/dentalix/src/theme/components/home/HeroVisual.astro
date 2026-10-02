@@ -1,0 +1,172 @@
+---
+import { Icon } from "astro-icon/components";
+import AppWindow from "@/theme/components/brand/AppWindow.astro";
+import Odontogram from "@/theme/components/brand/Odontogram.astro";
+import type { StoreFrontContent } from "@/theme/content";
+import { fmt } from "@/theme/utils/plans";
+
+interface Props {
+  content: StoreFrontContent;
+  currency: string;
+}
+
+const { content: c, currency } = Astro.props;
+
+const ROWS = 8;
+const times = ["09:00", "09:30", "10:00", "10:30", "11:00", "11:30", "12:00", "12:30"];
+const doctors = [c.mockDoctor1, c.mockDoctor2];
+const appts = [
+  { col: 0, row: 0, span: 1, tone: "teal", title: c.mockAppt1, who: c.mockPatient1, time: "09:00" },
+  { col: 0, row: 1, span: 2, tone: "amber", title: c.mockAppt2, who: c.mockPatient2, time: "09:30 – 10:30" },
+  { col: 0, row: 4, span: 1, tone: "sky", title: c.mockAppt3, who: c.mockPatient4, time: "11:00" },
+  { col: 0, row: 5, span: 2, tone: "violet", title: c.mockAppt4, who: c.mockPatient5, time: "11:30 – 12:30" },
+  { col: 1, row: 1, span: 1, tone: "rose", title: c.mockAppt5, who: c.mockPatient6, time: "09:30" },
+  { col: 1, row: 2, span: 2, tone: "indigo", title: c.mockAppt3, who: c.mockPatient3, time: "10:00 – 11:00", now: true },
+  { col: 1, row: 5, span: 1, tone: "teal", title: c.mockAppt6, who: c.mockPatient1, time: "11:30" },
+  { col: 1, row: 6, span: 2, tone: "amber", title: c.mockAppt2, who: c.mockPatient4, time: "12:00 – 13:00" },
+];
+const nav = [
+  { icon: "heroicons:squares-2x2", label: c.modDashboard },
+  { icon: "heroicons:calendar-days", label: c.modAgenda, active: true },
+  { icon: "heroicons:user-group", label: c.modWaiting },
+  { icon: "heroicons:users", label: c.modPatients },
+  { icon: "heroicons:clipboard-document-list", label: c.modChart },
+  { icon: "heroicons:document-text", label: c.modBilling },
+  { icon: "heroicons:clipboard-document-check", label: c.modRx },
+  { icon: "heroicons:beaker", label: c.modLab },
+  { icon: "heroicons:archive-box", label: c.modStock },
+  { icon: "heroicons:chart-bar", label: c.modReports },
+];
+const waiting = [
+  { who: c.mockPatient3, status: c.mockWaitingStatus1, tone: "teal", av: "--viz-teal" },
+  { who: c.mockPatient2, status: c.mockWaitingStatus2, tone: "amber", av: "--viz-amber" },
+  { who: c.mockPatient4, status: c.mockWaitingStatus3, tone: "indigo", av: "--viz-indigo" },
+];
+const initial = (name: string) => name.trim().charAt(0);
+const bars = [38, 52, 44, 66, 58, 74, 62, 88];
+---
+
+<div class="relative mx-auto w-full max-w-[64rem] pb-24 sm:pb-16" role="img" aria-label={c.heroVisualLabel}>
+  <AppWindow class="dx-reveal">
+    <div class="dx-app" aria-hidden="true">
+      <aside class="dx-app__side">
+        <div class="flex items-center gap-2 px-2">
+          <span class="h-6 w-6 rounded-md" style="background: linear-gradient(135deg, var(--clr-accent), var(--clr-primary))"></span>
+          <span class="h-2 w-16 rounded-full" style="background: var(--clr-border)"></span>
+        </div>
+        <div class="dx-app__nav">
+          {nav.map((item) => (
+            <span data-active={item.active ? "" : undefined}>
+              <Icon name={item.icon} />
+              {item.label}
+            </span>
+          ))}
+        </div>
+      </aside>
+
+      <div class="dx-app__main">
+        <div class="mb-3 flex items-center justify-between gap-2">
+          <div class="flex items-center gap-2 min-w-0">
+            <span class="font-bold text-[0.8125rem] truncate" style="color: var(--clr-text)">{c.modAgenda}</span>
+            <span class="dx-chip dx-chip--primary">{c.mockToday}</span>
+          </div>
+          <div class="flex items-center gap-1.5">
+            <span class="hidden sm:block h-7 w-28 rounded-md" style="background: var(--clr-surface-sunk); border: 1px solid var(--clr-border)"></span>
+            <span class="inline-flex h-7 w-7 items-center justify-center rounded-md" style="background: var(--clr-primary); color: var(--clr-on-primary)">
+              <Icon name="heroicons:plus" class="h-4 w-4" />
+            </span>
+          </div>
+        </div>
+
+        <div class="grid gap-3 lg:grid-cols-[minmax(0,1fr)_12.5rem]">
+          <div>
+            <div class="dx-agenda" style={`--cols: ${doctors.length}`}>
+              <span></span>
+              {doctors.map((d) => (
+                <span class="dx-agenda__head"><span class="dx-agenda__avatar"></span>{d}</span>
+              ))}
+            </div>
+            <div class="dx-agenda relative" style={`--cols: ${doctors.length}; --rows: ${ROWS}`}>
+              <div class="dx-agenda__rail" style={`--rows: ${ROWS}`}>
+                {times.map((t) => <span>{t}</span>)}
+              </div>
+              {doctors.map((_, col) => (
+                <div class="dx-agenda__col">
+                  {appts.filter((a) => a.col === col).map((a, i) => (
+                    <div
+                      class:list={["dx-appt", `dx-appt--${a.tone}`, a.now && "dx-appt--now"]}
+                      style={`top: calc(${(a.row / ROWS) * 100}% + 2px); height: calc(${(a.span / ROWS) * 100}% - 4px); animation-delay: ${200 + (col * 4 + i) * 70}ms`}
+                    >
+                      <b>{a.title}</b>
+                      <small>{a.who} · {a.time}</small>
+                    </div>
+                  ))}
+                </div>
+              ))}
+              <div class="pointer-events-none absolute inset-x-0" style="top: 32%">
+                <div class="ms-10 flex items-center">
+                  <span class="h-2 w-2 rounded-full" style="background: var(--clr-accent); box-shadow: 0 0 0 3px var(--clr-accent-tint)"></span>
+                  <span class="h-px flex-1" style="background: var(--clr-accent)"></span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="hidden lg:flex flex-col gap-3">
+            <div class="dx-panel !p-3">
+              <div class="dx-panel__head !mb-1">
+                <span class="dx-panel__title"><Icon name="heroicons:user-group" />{c.modWaiting}</span>
+              </div>
+              {waiting.map((w) => (
+                <div class="dx-row">
+                  <span class="dx-avatar" style={`--av-bg: var(${w.av}-soft); --av-fg: var(${w.av})`}>{initial(w.who)}</span>
+                  <span class="dx-row__main"><b>{w.who}</b></span>
+                  <span class={`dx-status dx-status--${w.tone}`}>{w.status}</span>
+                </div>
+              ))}
+            </div>
+            <div class="dx-panel !p-3">
+              <span class="text-[0.6875rem] font-semibold" style="color: var(--clr-text-3)">{c.mockReportsTitle}</span>
+              <div class="mt-1 font-bold text-[0.9375rem] tabular" style="color: var(--clr-text)">{fmt(684500)} {currency}</div>
+              <div class="dx-bars mt-2 !h-12">
+                {bars.map((h) => <i style={`height: ${h}%`}></i>)}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </AppWindow>
+
+  <div class="dx-float bottom-0 start-3 end-3 sm:end-auto sm:start-6 lg:-start-8 sm:w-[21rem]" style="animation-delay: 450ms" aria-hidden="true">
+    <div class="dx-float__title">
+      <span class="flex items-center gap-2">
+        <span class="dx-icon-tile !h-7 !w-7 !rounded-lg"><Icon name="heroicons:clipboard-document-list" class="!h-4 !w-4" /></span>
+        {c.modChart}
+      </span>
+      <span class="dx-chip !h-6">{c.mockChartSub}</span>
+    </div>
+    <Odontogram showNumbers={true} selected={26} />
+    <div class="dx-legend">
+      <span style="--legend: var(--tooth-caries)"><i></i>{c.legendCaries}</span>
+      <span style="--legend: var(--tooth-restoration)"><i></i>{c.legendRestoration}</span>
+      <span style="--legend: var(--tooth-crown)"><i></i>{c.legendCrown}</span>
+      <span style="--legend: var(--tooth-endo)"><i></i>{c.legendEndo}</span>
+      <span style="--legend: var(--tooth-implant)"><i></i>{c.legendImplant}</span>
+    </div>
+  </div>
+
+  <div class="dx-float dx-toast hidden sm:flex top-16 -end-2 lg:-end-10 !p-2.5" style="animation-delay: 700ms" aria-hidden="true">
+    <span class="dx-toast__icon" style="background: var(--clr-accent-tint); color: var(--clr-accent-strong)">
+      <Icon name="heroicons:chat-bubble-left-right" />
+    </span>
+    <span><b>{c.mockReminderTitle}</b><small>{c.mockPatient2} · {c.mockReminderSub}</small></span>
+  </div>
+
+  <div class="dx-float dx-toast hidden md:flex bottom-6 end-6 lg:-end-6 !p-2.5" style="animation-delay: 900ms" aria-hidden="true">
+    <span class="dx-toast__icon" style="background: var(--clr-success-soft); color: var(--clr-success)">
+      <Icon name="heroicons:check-badge" />
+    </span>
+    <span><b>{c.mockInvoiceTitle} · {fmt(8500)} {currency}</b><small>{c.mockInvoiceSub} · {c.modInsurance}</small></span>
+  </div>
+</div>

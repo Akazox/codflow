@@ -306,4 +306,126 @@ export interface StoreFrontContent {
   notFoundCtaHome: string;
   notFoundCtaProducts: string;
   notFoundPageTitle: string;
+
+  // ══ Akalya brand theme ═══════════════════════════════════════════════════
+
+  // ── Chrome: skip link + menu drawer ──────────────────────────────────────
+  skipToContent: string;
+  menuOpenLabel: string;
+  menuCloseLabel: string;
+  menuShopTitle: string;
+  menuAllProducts: string;
+  menuDiscoverTitle: string;
+  navRituals: string;
+  navIngredients: string;
+
+  // ── Home: hero ───────────────────────────────────────────────────────────
+  /** Second headline line, set in the accent style (italic serif in Latin). Empty = one line. */
+  heroTitleAccent: string;
+  /** Small caption on the hero product label (product name + price come from the API). */
+  heroProductLabel: string;
+
+  // ── Trust strip (fourth item; items 1–3 reuse trust1–3) ──────────────────
+  trust4Title: string;
+  trust4Sub: string;
+
+  // ── Home: section eyebrows + category tiles ──────────────────────────────
+  categoriesEyebrow: string;
+  categoriesCta: string;
+  bestSellersEyebrow: string;
+  newArrivalsEyebrow: string;
+  howItWorksEyebrow: string;
+  promoEyebrow: string;
+  testimonialsEyebrow: string;
+
+  // ── Home: ingredient story ───────────────────────────────────────────────
+  ingredientsEyebrow: string;
+  ingredientsTitle: string;
+  ingredientsSub: string;
+  ingredient1Name: string;
+  ingredient1Text: string;
+  ingredient2Name: string;
+  ingredient2Text: string;
+  ingredient3Name: string;
+  ingredient3Text: string;
+  ingredient4Name: string;
+  ingredient4Text: string;
+
+  // ── Home: ritual steps ───────────────────────────────────────────────────
+  ritualEyebrow: string;
+  ritualTitle: string;
+  ritualSub: string;
+  ritualStep1Title: string;
+  ritualStep1Text: string;
+  ritualStep2Title: string;
+  ritualStep2Text: string;
+  ritualStep3Title: string;
+  ritualStep3Text: string;
+  ritualCta: string;
+
+  // ── Footer ───────────────────────────────────────────────────────────────
+  footerTagline: string;
+  footerCommitments: string;
+  footerCallUs: string;
+  footerWriteUs: string;
+
+  // ── Listing / category ───────────────────────────────────────────────────
+  listingEyebrow: string;
+  listingIntro: string;
+  categoryEyebrow: string;
+  /** `{n}` = 1. */
+  productCountOne: string;
+  /** `{n}` = number of products. */
+  productCountMany: string;
+
+  // ── Product page ─────────────────────────────────────────────────────────
+  pdpPromise1: string;
+  pdpPromise2: string;
+  pdpPromise3: string;
+  accDescription: string;
+  accHowToUse: string;
+  accHowToUseText: string;
+  accIngredients: string;
+  accIngredientsText: string;
+  accDelivery: string;
+  accDeliveryText: string;
+  /** `{amount}` + `{currency}` — shown only when the store has a free-delivery threshold. */
+  accDeliveryFree: string;
+  /** `{n}` = number of reviews. */
+  reviewsCountLabel: string;
+  /** `{n}` = rating. Accessible label for a star row. */
+  ariaRatingOutOf: string;
+  /** `{name}` = product name. Accessible label for the quick-add button on cards. */
+  cartQuickAddLabel: string;
+
+  // ── Landing page blocks (store-wide, merchant-editable) ──────────────────
+  lpBenefitsEyebrow: string;
+  lpBenefit1Title: string;
+  lpBenefit1Text: string;
+  lpBenefit2Title: string;
+  lpBenefit2Text: string;
+  lpBenefit3Title: string;
+  lpBenefit3Text: string;
+  lpHowToTitle: string;
+  lpHowTo1: string;
+  lpHowTo2: string;
+  lpHowTo3: string;
+  lpFaqEyebrow: string;
+  lpFaqTitle: string;
+  lpFaq1Q: string;
+  lpFaq1A: string;
+  lpFaq2Q: string;
+  /** Delivery answer when the store has no delivery window configured. */
+  lpFaq2A: string;
+  /** Delivery answer with `{min}` / `{max}` days, from the store's legal profile. */
+  lpFaqDeliveryRange: string;
+  lpFaq3Q: string;
+  lpFaq3A: string;
+  lpFaq4Q: string;
+  lpFaq4A: string;
+  lpFaq5Q: string;
+  lpFaq5A: string;
+
+  // ── Thank-you ────────────────────────────────────────────────────────────
+  thankYouEyebrow: string;
 }

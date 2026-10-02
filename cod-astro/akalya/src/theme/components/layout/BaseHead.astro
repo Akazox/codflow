@@ -1,11 +1,12 @@
 ---
-// View transitions removed — ClientRouter caused dynamic module scripts
-// fetches on soft navigation to be served with empty Content-Type by the
-// SSR worker, breaking strict-MIME-checked module loading. After that
-// failure, product.ts never executed and every interactive element
-// (variant pills, offers, dropdowns, qty stepper) appeared "blocked".
-// We don't actually navigate between pages on the storefront — full page
-// loads are fine and removed the regression entirely.
+// No ClientRouter / view transitions: they broke module-script MIME types on
+// the deployed Worker (see THEME_GUIDE.md). Full page loads only.
+//
+// Akalya owns its palette and type (styles/global.css). Unlike theme01, the
+// dashboard's primary/accent/bg colours and font are NOT injected here.
+
+import { DEFAULT_CONFIG } from "@/theme/config/store";
+import { MEDIA_DOMAIN } from "astro:env/server";
 
 interface Props {
   title: string;
@@ -13,26 +14,29 @@ interface Props {
   ogImage: string;
   noindex?: boolean;
   config: any;
-  primary: string;
-  fontHref: string;
-  font: string;
-  bg: string;
-  accent: string;
-  /** The page's LCP images (landing page stack top) — preloaded in <head>
-   *  so their fetch starts before the parser reaches the <img> tags. */
+  /** The page's LCP images (landing page stack top, home hero) — preloaded. */
   preloadImages?: string[];
 }
 
-const { title, description, ogImage, noindex, config, primary, fontHref, font, bg, accent, preloadImages } = Astro.props;
+const { title, description, ogImage, noindex, config, preloadImages } = Astro.props;
 
-import { MEDIA_DOMAIN } from "astro:env/server";
+const isArabic = config.lang === "ar";
+const OG_LOCALES: Record<string, string> = { ar: "ar_DZ", fr: "fr_DZ", en: "en_US" };
+const ogLocale = OG_LOCALES[config.lang] ?? "fr_DZ";
+
+// Fraunces (display) + Jost (text) for Latin; Amiri (display) + Tajawal (text)
+// are added only for an Arabic storefront, so French/English pages never
+// download Arabic fonts they do not render.
+const LATIN_FAMILIES = "family=Fraunces:ital,opsz,wght@0,9..144,300..600;1,9..144,300..500&family=Jost:wght@300..600";
+const ARABIC_FAMILIES = "&family=Amiri:wght@400;700&family=Tajawal:wght@400;500;700";
+const fontHref = `https://fonts.googleapis.com/css2?${LATIN_FAMILIES}${isArabic ? ARABIC_FAMILIES : ""}&display=swap`;
 ---
 
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="generator" content={Astro.generator} />
-  <meta name="theme-color" content={primary} />
+  <meta name="theme-color" content={DEFAULT_CONFIG.bgColor} />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <link rel="icon" href="/favicon.ico" sizes="any" />
@@ -40,48 +44,37 @@ import { MEDIA_DOMAIN } from "astro:env/server";
   <meta name="description" content={description} />
   {noindex && <meta name="robots" content="noindex,nofollow" />}
 
-  <!-- SEO -->
   <link rel="canonical" href={Astro.url.href} />
   <meta name="author" content={config.name} />
 
-  <!-- OG -->
   <meta property="og:title" content={title} />
   <meta property="og:site_name" content={config.name} />
   <meta property="og:url" content={Astro.url.href} />
   <meta property="og:description" content={description} />
   {ogImage && <meta property="og:image" content={ogImage} />}
   <meta property="og:type" content="website" />
-  <meta property="og:locale" content={config.lang === "ar" ? "ar_DZ" : "en_US"} />
+  <meta property="og:locale" content={ogLocale} />
 
-  <!-- Twitter -->
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content={title} />
   <meta name="twitter:description" content={description} />
   {ogImage && <meta name="twitter:image" content={ogImage} />}
 
-  <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href={fontHref} rel="stylesheet" media="print" onload="this.media='all'" />
   <noscript><link href={fontHref} rel="stylesheet" /></noscript>
 
-  <!-- R2 media domain — early connection for product images -->
   {MEDIA_DOMAIN && <link rel="preconnect" href={`https://${MEDIA_DOMAIN}`} />}
 
-  <!-- LCP image preload — starts the first stack images' fetches from the
-       head (fetchpriority on the img alone waits for the parser to reach it).
-       Only the first is high priority: preloading deep stack images would
-       compete with the LCP for mobile bandwidth. -->
+  {/* Only the first preload is high priority: deeper images would compete
+      with the LCP for mobile bandwidth. */}
   {preloadImages?.slice(0, 2).map((src, i) => (
     <link rel="preload" as="image" href={src} fetchpriority={i === 0 ? "high" : undefined} />
   ))}
 
-  <!-- Meta Pixel — canonical base code, unmodified. fbevents.js ships its own
-       command queue: every fbq() call made before the library arrives (incl.
-       ViewContent/InitiateCheckout from product.ts) is buffered and flushed
-       automatically once it loads. Do not defer or custom-load it — a
-       hand-rolled loader delays or drops events whenever window.load or the
-       script fetch misbehaves. -->
+  {/* Meta Pixel — canonical base code, unmodified. fbevents.js buffers every
+      fbq() call made before it loads; do not defer or custom-load it. */}
   {config.pixelId && (
     <Fragment>
       <script type="text/javascript" set:html={`
@@ -105,29 +98,9 @@ fbq('track', 'PageView');
     </Fragment>
   )}
 
-  <!-- Dynamic theme tokens + Critical CSS -->
   <style set:html={`
-    :root {
-      --clr-primary: ${primary};
-      --clr-accent:  ${accent};
-      --clr-bg:      ${bg};
-      --font-body:   ${font};
-      --safe-top: env(safe-area-inset-top, 0px);
-      --safe-bottom: env(safe-area-inset-bottom, 0px);
-    }
-    /* Critical above-the-fold styles */
     *, *::before, *::after { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
     html { scroll-behavior: smooth; height: -webkit-fill-available; }
-    body {
-      font-family: var(--font-body), "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
-      background: var(--clr-bg);
-      color: var(--clr-text);
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
-      min-height: 100vh;
-      line-height: 1.5;
-      overflow-x: hidden;
-      margin: 0;
-    }
+    body { margin: 0; min-height: 100vh; overflow-x: hidden; -webkit-font-smoothing: antialiased; }
   `} />
 </head>

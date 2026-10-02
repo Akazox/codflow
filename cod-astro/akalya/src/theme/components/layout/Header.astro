@@ -1,83 +1,148 @@
 ---
+/**
+ * Site header + mobile menu drawer.
+ *
+ * Mobile: menu · centred wordmark · bag. Desktop: wordmark · shop + category
+ * nav · bag. Categories are fetched here (one small request) so both the
+ * desktop nav and the drawer list the merchant's real collections.
+ *
+ * The drawer is rendered as a SIBLING of <header>, never inside it: the
+ * header's backdrop-filter makes it the containing block for fixed children,
+ * which would trap the drawer inside the 60px bar.
+ */
 import { Image } from "astro:assets";
 import type { StoreConfig } from "@/core/api/types";
 import type { StoreFrontContent } from "@/theme/config/content";
 import { Icon } from "astro-icon/components";
 import CartBadge from "@/theme/components/cart/CartBadge.astro";
+import Ornament from "@/theme/components/ui/Ornament.astro";
+import { fetchCategoriesRaw } from "@/core/api/client";
 
 interface Props {
   config: StoreConfig;
   content?: StoreFrontContent;
 }
 const { config, content } = Astro.props;
+
+const categories = (await fetchCategoriesRaw())
+  .slice()
+  .sort((a: any, b: any) => (a.position ?? 0) - (b.position ?? 0));
+const navCategories = categories.slice(0, 4);
+const path = Astro.url.pathname;
+const nameScript = /[؀-ۿ]/.test(config.name) ? "ar" : "latin";
 ---
 
-<header
-  class="sticky top-0 z-50 transition-all duration-300 bg-white/80 backdrop-blur-xl border-b border-black/[.04]"
-  style="padding-top: var(--safe-top); height: calc(4.5rem + var(--safe-top));"
->
-  <div class="max-w-7xl mx-auto h-full flex items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
-
-    {/* Logo — start */}
-    <div class="flex items-center gap-2.5 shrink-0">
-      <a href="/" class="flex items-center gap-2.5 active:scale-95 transition-transform" aria-label={config.name}>
-        {config.logoUrl ? (
-          <Image
-            src={config.logoUrl}
-            alt={config.name}
-            width={160}
-            height={48}
-            format="webp"
-            quality={90}
-            class="h-9 sm:h-10 w-auto object-contain"
-            loading="eager"
-            decoding="async"
-          />
-        ) : (
-          <span
-            class="font-black text-2xl sm:text-3xl leading-none tracking-tighter uppercase"
-            style="color: var(--clr-primary)"
-          >
-            {config.name}
-          </span>
-        )}
-      </a>
+<header class="akl-header" style="padding-top: var(--safe-top)">
+  <div class="akl-container akl-header-inner grid grid-cols-[1fr_auto_1fr] lg:grid-cols-[auto_1fr_auto] items-center gap-4">
+    <div class="flex items-center lg:hidden">
+      <button
+        type="button"
+        id="menu-open"
+        class="akl-icon-btn -ms-2.5"
+        aria-label={content?.menuOpenLabel}
+        aria-controls="menu-drawer"
+        aria-expanded="false"
+      >
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" aria-hidden="true">
+          <path d="M3.5 8h17M3.5 16h11" />
+        </svg>
+      </button>
     </div>
 
-    {/* Nav links — center (desktop only) */}
-    <nav
-      class="hidden md:flex items-center gap-1 lg:gap-2 text-[0.9375rem] font-bold flex-1 justify-center"
-      aria-label={content?.ariaMainNavigation}
-    >
-      <a href="/" class="px-4 py-2 rounded-xl transition-all hover:text-primary active:scale-95" style="color: var(--clr-text)">
-        {content?.navHome}
-      </a>
-      <a href="/products" class="px-4 py-2 rounded-xl transition-all hover:text-primary active:scale-95" style="color: var(--clr-text)">
+    <a href="/" class="flex items-center justify-center lg:justify-start" aria-label={config.name}>
+      {config.logoUrl ? (
+        <Image
+          src={config.logoUrl}
+          alt={config.name}
+          width={160}
+          height={48}
+          format="webp"
+          quality={90}
+          class="h-8 lg:h-10 w-auto object-contain"
+          loading="eager"
+          decoding="async"
+        />
+      ) : (
+        <span class="akl-wordmark" data-script={nameScript}>{config.name}</span>
+      )}
+    </a>
+
+    <nav class="hidden lg:flex items-center justify-center gap-9" aria-label={content?.ariaMainNavigation}>
+      <a href="/products" class="akl-nav-link" aria-current={path === "/products" ? "page" : undefined}>
         {content?.navProducts}
       </a>
-      <a href="/#best-sellers" class="px-4 py-2 rounded-xl transition-all hover:text-primary active:scale-95" style="color: var(--clr-text)">
-        {content?.navBestSellers}
-      </a>
-      <a href="/#new-arrivals" class="px-4 py-2 rounded-xl transition-all hover:text-primary active:scale-95" style="color: var(--clr-text)">
-        {content?.navNewArrivals}
-      </a>
+      {navCategories.map((cat: any) => (
+        <a
+          href={`/category/${cat.slug}`}
+          class="akl-nav-link"
+          aria-current={path === `/category/${cat.slug}` ? "page" : undefined}
+        >
+          {cat.name}
+        </a>
+      ))}
+      <a href="/#rituel" class="akl-nav-link">{content?.navRituals}</a>
     </nav>
 
-    {/* Search icon — end */}
-    <div class="flex items-center gap-1 sm:gap-2 shrink-0">
-      <a
-        href="/products"
-        class="p-2.5 rounded-full hover:bg-black/5 active:scale-90 transition-all"
-        style="color: var(--clr-text)"
-        aria-label={content?.searchLabel}
-      >
-        <Icon name="heroicons:magnifying-glass" class="w-[22px] h-[22px]" aria-hidden="true" />
-      </a>
-
-      {/* Cart trigger. Present only when the merchant enabled the cart, and it
-          keeps itself hidden until the basket has something in it. */}
+    <div class="flex items-center justify-end gap-1">
       {config.cartEnabled && content && <CartBadge content={content} />}
     </div>
-
   </div>
 </header>
+
+{content && (
+  <div id="menu-root" class="lg:hidden">
+    <div id="menu-scrim" class="akl-sheet-scrim" hidden></div>
+    <aside
+      id="menu-drawer"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="menu-title"
+      hidden
+    >
+      <div class="flex items-center justify-between px-5 border-b" style="height: calc(var(--header-h) + var(--safe-top)); padding-top: var(--safe-top); border-color: var(--clr-border)">
+        <span id="menu-title" class="akl-wordmark" data-script={nameScript}>{config.name}</span>
+        <button type="button" id="menu-close" class="akl-icon-btn -me-2.5" aria-label={content.menuCloseLabel}>
+          <Icon name="heroicons:x-mark" />
+        </button>
+      </div>
+
+      <nav class="relative flex-1 overflow-y-auto overscroll-contain px-5 pt-7 pb-10" aria-label={content.ariaMainNavigation}>
+        <p class="t-eyebrow mb-1">{content.menuShopTitle}</p>
+        <a href="/products" class="akl-menu-link">
+          <span>{content.menuAllProducts}</span>
+          <Icon name="heroicons:arrow-right" class="flip-rtl" />
+        </a>
+        {categories.map((cat: any) => (
+          <a href={`/category/${cat.slug}`} class="akl-menu-link">
+            <span>{cat.name}</span>
+            <Icon name="heroicons:arrow-right" class="flip-rtl" />
+          </a>
+        ))}
+
+        <p class="t-eyebrow mt-10 mb-2">{content.menuDiscoverTitle}</p>
+        <a href="/" class="akl-menu-sub">{content.navHome}</a>
+        <a href="/#best-sellers" class="akl-menu-sub">{content.navBestSellers}</a>
+        <a href="/#rituel" class="akl-menu-sub">{content.navRituals}</a>
+        <a href="/#ingredients" class="akl-menu-sub">{content.navIngredients}</a>
+        {config.pages.map((page) => (
+          <a href={`/pages/${page.slug}`} class="akl-menu-sub">{page.title}</a>
+        ))}
+
+        <Ornament name="arch" class="pointer-events-none absolute -bottom-10 end-[-3rem] w-44 h-56 opacity-[0.18] akl-ornament" />
+      </nav>
+
+      <div class="px-5 py-5 space-y-2.5 border-t" style="border-color: var(--clr-border); background: var(--clr-surface-alt-soft); padding-bottom: calc(1.25rem + var(--safe-bottom))">
+        {[content.trust1Title, content.trust2Title].map((line) => (
+          <p class="flex items-center gap-2.5 text-[0.875rem]" style="color: var(--clr-text)">
+            <Ornament name="star" class="w-2.5 h-2.5 shrink-0 akl-ornament" />
+            {line}
+          </p>
+        ))}
+      </div>
+    </aside>
+  </div>
+)}
+
+<script>
+  import "@/theme/scripts/menu-drawer";
+</script>

@@ -1,148 +1,113 @@
 ---
-// ── CUSTOMIZE HERE ────────────────────────────────────────────────────────────
-// Product card used on the home page, all-products page, and category pages.
-// ─────────────────────────────────────────────────────────────────────────────
+/**
+ * Product card — calm, image-first (4:5 on warm stone), serif name, one line
+ * of what it is, price. The whole card is one link (the title's stretched
+ * ::after); a simple, in-stock product also gets a round quick-add when the
+ * merchant has the cart on. Products with variants link to their page, where
+ * the shopper picks a size first.
+ */
 import { Image } from "astro:assets";
 import type { Product } from "@/core/api/types";
 import type { StoreFrontContent } from "@/theme/config/content";
-import { Icon } from "astro-icon/components";
+import AddToCartButton from "@/theme/components/cart/AddToCartButton.astro";
+import StarRow from "@/theme/components/ui/StarRow.astro";
+import { productImageSource } from "@/theme/utils/product-image";
+import { getThumbnailImage } from "@/core/utils/image-optimizer";
+import { formatPrice, discountPercent } from "@/theme/utils/format";
 
 interface Props {
   product: Product;
   currencySymbol?: string;
   eager?: boolean;
   content?: StoreFrontContent;
+  /** The store's cart switch — enables the quick-add on simple products. */
+  cartEnabled?: boolean;
+  /** Heading level for the product name inside its section. */
+  headingLevel?: "h2" | "h3";
 }
 
-const { product, currencySymbol = "دج", eager = false, content } = Astro.props;
+const { product, currencySymbol = "", eager = false, content, cartEnabled = false, headingLevel = "h3" } = Astro.props;
 
-const image        = product.coverImage ?? product.images?.[0];
-const hasDiscount  = product.compareAtPrice != null && product.compareAtPrice > product.price;
-const discountPct  = hasDiscount ? Math.round((1 - product.price / product.compareAtPrice!) * 100) : 0;
-const isLowStock   = product.trackInventory && product.inventory > 0 && product.inventory <= 5;
+const image = product.coverImage ?? product.images?.[0];
+const pct = discountPercent(product.price, product.compareAtPrice);
 const isOutOfStock = product.trackInventory && product.inventory === 0;
-
-const ctaText      = content?.orderCta    ?? "اطلب الآن";
-const outOfStockTx = content?.outOfStock  ?? "نفد المخزون";
-const lowStockTx   = content?.lowStock
-  ? content.lowStock.replace("{n}", String(product.inventory))
-  : `آخر ${product.inventory} قطع`;
+const isLowStock = product.trackInventory && product.inventory > 0 && product.inventory <= 5;
+const href = `/products/${product.handle}`;
+const summary = product.descriptionPlain ?? (product.descriptionFormat !== "html" ? product.description : null);
+const quickAdd = cartEnabled && content && !product.hasVariants && !isOutOfStock;
+const thumbSrc = productImageSource(product);
+const Heading = headingLevel;
+const ariaLabel = content?.ariaProductCard
+  ?.replace("{name}", product.name)
+  ?.replace("{price}", formatPrice(product.price))
+  ?.replace("{currency}", currencySymbol) ?? product.name;
 ---
 
-<a
-  href={`/products/${product.handle}`}
-  data-astro-prefetch="hover"
-  class="product-card group flex flex-col rounded-2xl overflow-hidden active:scale-[0.97]"
-  style="background: var(--clr-surface)"
-  aria-label={content?.ariaProductCard
-    ?.replace("{name}", product.name)
-    ?.replace("{price}", product.price.toLocaleString("ar-DZ"))
-    ?.replace("{currency}", currencySymbol) ?? product.name}
->
-  <!-- ── Image ── -->
-  <div class="relative aspect-square overflow-hidden shrink-0" style="background: var(--clr-surface-alt)">
+<article class="pcard">
+  <div class="pcard-media">
     {image ? (
       <Image
         src={image.src}
         alt={image.altText ?? product.name}
-        width={400}
-        height={400}
+        width={480}
+        height={600}
         loading={eager ? "eager" : "lazy"}
         decoding="async"
         format="webp"
         quality={85}
-        class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
       />
     ) : (
-      <div class="w-full h-full flex items-center justify-center opacity-20" style="color: var(--clr-text-2)" aria-hidden="true">
-        <Icon name="heroicons:photo" class="w-12 h-12" />
+      <div class="w-full h-full flex items-center justify-center" aria-hidden="true">
+        <svg viewBox="0 0 100 125" class="w-1/3 opacity-30" style="color: var(--clr-primary)"><path d="M10 125V80A50 50 0 1 1 90 80V125" fill="none" stroke="currentColor" stroke-width="1.5" /></svg>
       </div>
     )}
 
-    <!-- Discount badge -->
-    {hasDiscount && (
-      <div class="absolute top-3 start-3" aria-hidden="true">
-        <span class="bg-red-600 text-white text-xs font-black px-2.5 py-1.5 rounded-lg shadow-md tracking-tight">
-          -{discountPct}%
-        </span>
+    {pct > 0 && !isOutOfStock && (
+      <span class="akl-badge absolute top-3 start-3 tabular" aria-hidden="true">−{pct}%</span>
+    )}
+
+    {isOutOfStock && content && (
+      <div class="pcard-soldout" aria-hidden="true">
+        <span class="akl-badge akl-badge-dark">{content.outOfStock}</span>
       </div>
     )}
 
-    <!-- Out of stock overlay -->
-    {isOutOfStock && (
-      <div class="absolute inset-0 bg-black/50 flex items-center justify-center" aria-hidden="true">
-        <span class="bg-black/80 text-white text-sm font-black px-4 py-2 rounded-xl">
-          {outOfStockTx}
-        </span>
-      </div>
-    )}
-
-    <!-- Low stock strip at bottom of image -->
-    {!isOutOfStock && isLowStock && (
-      <div class="absolute bottom-0 inset-x-0 px-3 py-2.5"
-        style="background: linear-gradient(to top, var(--overlay-dark), transparent)"
-        aria-hidden="true">
-        <p class="text-white text-xs font-black">
-          <Icon name="heroicons:bolt" class="w-3 h-3 inline" /> {lowStockTx}
-        </p>
+    {quickAdd && content && (
+      <div class="pcard-quick">
+        <AddToCartButton
+          compact={true}
+          product={product}
+          content={content}
+          basePrice={product.price}
+          image={thumbSrc ? getThumbnailImage(thumbSrc) : null}
+        />
       </div>
     )}
   </div>
 
-  <!-- ── Info ── -->
-  <div class="flex flex-col flex-1 p-4 gap-2.5">
-
-    <!-- Name -->
-    <p class="font-bold text-sm leading-snug line-clamp-2 flex-1" style="color: var(--clr-text)">
-      {product.name}
-    </p>
-
-    <!-- Rating -->
-    {product.reviewStats && product.reviewStats.reviewCount > 0 && (
+  <div class="flex flex-col gap-1.5 pt-3.5 pe-1">
+    <Heading class="pcard-title">
+      <a href={href} data-astro-prefetch="hover" aria-label={ariaLabel}>{product.name}</a>
+    </Heading>
+    {summary && (
+      <p class="t-small line-clamp-2">{summary}</p>
+    )}
+    {product.reviewStats && product.reviewStats.reviewCount > 0 && content && (
       <div class="flex items-center gap-1.5">
-        <div class="flex gap-px" aria-hidden="true">
-          {[1,2,3,4,5].map(s => (
-            <svg width="11" height="11" viewBox="0 0 24 24"
-              fill={s <= Math.round(product.reviewStats!.avgRating) ? "var(--clr-primary)" : "none"}
-              stroke="var(--clr-primary)" stroke-width="1.5"
-              stroke-linecap="round" stroke-linejoin="round"
-            >
-              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-            </svg>
-          ))}
-        </div>
-        <span class="text-[0.6875rem] font-bold leading-none" style="color: var(--clr-text-2)">
-          {product.reviewStats.avgRating}
-          <span class="opacity-70">({product.reviewStats.reviewCount})</span>
-        </span>
+        <StarRow rating={product.reviewStats.avgRating} label={content.ariaRatingOutOf.replace("{n}", String(product.reviewStats.avgRating))} />
+        <span class="text-[0.75rem] tabular" style="color: var(--clr-text-2)">({product.reviewStats.reviewCount})</span>
       </div>
     )}
-
-    <!-- Price row -->
-    <div class="flex items-baseline justify-between gap-1.5">
-      <span class="font-black text-lg leading-none" style="color: var(--clr-primary)">
-        {product.price.toLocaleString("ar-DZ")}
-        <span class="text-[0.625rem] font-bold ms-0.5" style="color: var(--clr-primary); opacity: 0.9">{currencySymbol}</span>
-      </span>
-      {hasDiscount && (
-        <span class="text-xs line-through font-semibold leading-none shrink-0" style="color: var(--clr-text-2)">
-          {product.compareAtPrice!.toLocaleString("ar-DZ")}
-        </span>
+    <p class="flex flex-wrap items-baseline gap-x-2 mt-0.5">
+      <span class="t-price text-[0.9375rem]">{formatPrice(product.price)} {currencySymbol}</span>
+      {pct > 0 && (
+        <span class="t-compare text-[0.8125rem] tabular">{formatPrice(product.compareAtPrice!)} {currencySymbol}</span>
       )}
-    </div>
-
-    <!-- CTA button -->
-    <div
-      class="w-full h-10 rounded-xl flex items-center justify-center gap-2 font-black text-sm text-white mt-0.5 transition-all duration-200 ease-out hover:brightness-110"
-      style={isOutOfStock
-        ? "background: var(--clr-disabled)"
-        : "background: var(--clr-primary)"}
-      aria-hidden="true"
-    >
-      {!isOutOfStock && (
-        <Icon name="heroicons:shopping-bag" class="w-4 h-4" aria-hidden="true" />
-      )}
-      {isOutOfStock ? outOfStockTx : ctaText}
-    </div>
+    </p>
+    {isLowStock && content && (
+      <p class="text-[0.75rem] font-medium" style="color: var(--clr-primary-ink)">
+        {content.lowStock.replace("{n}", String(product.inventory))}
+      </p>
+    )}
   </div>
-</a>
+</article>

@@ -1,0 +1,18 @@
+---
+/** Five small stars in clay, filled to a real rating. `label` is announced. */
+interface Props {
+  rating: number;
+  label: string;
+  size?: number;
+}
+const { rating, label, size = 12 } = Astro.props;
+const filled = Math.round(rating);
+---
+
+<span class="inline-flex items-center gap-[2px]" role="img" aria-label={label} style="color: var(--clr-primary-ink)">
+  {[1, 2, 3, 4, 5].map((s) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill={s <= filled ? "currentColor" : "none"} stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" aria-hidden="true">
+      <path d="m12 2.8 2.8 5.8 6.3.9-4.6 4.4 1.1 6.3L12 17.2l-5.6 3 1.1-6.3-4.6-4.4 6.3-.9L12 2.8Z" />
+    </svg>
+  ))}
+</span>

@@ -327,27 +327,36 @@ export function initProductPage() {
     btn.addEventListener("click", () => {
       if (btn.dataset.oos === "1") return; // ignore out-of-stock pills
       const opt = btn.dataset.option!;
-      selectedOpts[opt] = btn.dataset.value!;
+      const value = btn.dataset.value!;
+      selectedOpts[opt] = value;
 
-      // Reset siblings (skip OOS pills)
-      document.querySelectorAll<HTMLButtonElement>(`.variant-opt[data-option="${opt}"]`).forEach((b) => {
-        b.classList.remove("text-[var(--clr-primary)]", "bg-[var(--clr-primary)]/5", "border-[var(--clr-primary)]");
-        b.classList.add("text-[var(--clr-text-2)]", "bg-[var(--clr-surface)]", "border-[var(--clr-border)]");
-        const icon = b.querySelector('.check-icon');
-        if (icon) icon.classList.replace('opacity-100', 'opacity-0');
+      // The same option can be rendered twice (above the fold and inside the
+      // order card): every button for this option follows the one tapped.
+      document.querySelectorAll<HTMLButtonElement>(".variant-opt").forEach((b) => {
+        if (b.dataset.option !== opt) return;
+        if (b.dataset.value === value) selectVariantBtn(b);
+        else deselectVariantBtn(b);
       });
 
-      selectVariantBtn(btn);
       updateVariant();
     });
   });
 
   /** Visual helper for active variant button */
   function selectVariantBtn(btn: HTMLButtonElement) {
+    btn.setAttribute("aria-pressed", "true");
     btn.classList.remove("text-[var(--clr-text-2)]", "bg-[var(--clr-surface)]", "border-[var(--clr-border)]");
     btn.classList.add("text-[var(--clr-primary)]", "bg-[var(--clr-primary)]/5", "border-[var(--clr-primary)]");
     const icon = btn.querySelector('.check-icon');
     if (icon) icon.classList.replace('opacity-0', 'opacity-100');
+  }
+
+  function deselectVariantBtn(btn: HTMLButtonElement) {
+    btn.setAttribute("aria-pressed", "false");
+    btn.classList.remove("text-[var(--clr-primary)]", "bg-[var(--clr-primary)]/5", "border-[var(--clr-primary)]");
+    btn.classList.add("text-[var(--clr-text-2)]", "bg-[var(--clr-surface)]", "border-[var(--clr-border)]");
+    const icon = btn.querySelector('.check-icon');
+    if (icon) icon.classList.replace('opacity-100', 'opacity-0');
   }
 
   /**

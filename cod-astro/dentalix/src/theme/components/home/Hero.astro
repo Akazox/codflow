@@ -1,76 +1,60 @@
 ---
-import type { StoreFrontContent } from "@/theme/config/content";
 import { Icon } from "astro-icon/components";
+import HeroVisual from "./HeroVisual.astro";
+import type { StoreFrontContent } from "@/theme/content";
 
 interface Props {
   content: StoreFrontContent;
+  currency: string;
+  isRTL: boolean;
 }
 
-const { content } = Astro.props;
+const { content, currency, isRTL } = Astro.props;
+const trust = [content.trust1Title, content.trust2Title, content.trust3Title].filter(Boolean);
 ---
 
-<section class="hero-bg-subtle overflow-hidden relative -mt-[calc(4.5rem+var(--safe-top))] pt-[calc(4.5rem+var(--safe-top))]">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <div class="flex items-center justify-center min-h-[500px] sm:min-h-[550px] lg:min-h-[600px]">
+<section class="dx-hero" aria-labelledby="hero-title">
+  <div class="dx-hero__grid-bg" aria-hidden="true"></div>
+  <div class="dx-container relative">
+    <div class="mx-auto max-w-3xl text-center">
+      {content.heroEyebrow && (
+        <p class="dx-eyebrow dx-reveal">
+          {content.heroEyebrowTag && <span class="dx-eyebrow__dot">{content.heroEyebrowTag}</span>}
+          {content.heroEyebrow}
+        </p>
+      )}
+      <h1 id="hero-title" class="dx-h1 mt-6 dx-reveal" style="animation-delay: 60ms">
+        {content.heroTitle}
+        {content.heroTitleAccent && (
+          <>
+            {" "}<span class="dx-gradient-text">{content.heroTitleAccent}</span>
+          </>
+        )}
+      </h1>
+      <p class="dx-lead mx-auto mt-6 max-w-2xl dx-reveal" style="animation-delay: 120ms">{content.heroSubtitle}</p>
 
-      <div class="flex flex-col justify-center py-16 sm:py-20 lg:py-24 relative z-20 text-center">
-        <div class="space-y-6 sm:space-y-8 max-w-2xl mx-auto">
-          {/* Eyebrow badge */}
-          {content.heroEyebrow && (
-            <div class="animate-fade-in-up">
-              <span class="inline-flex items-center gap-2 text-[0.75rem] font-black uppercase tracking-[0.2em] px-4 py-1.5 rounded-full bg-white/50 border border-black/[0.04] text-primary backdrop-blur-sm">
-                {content.heroEyebrow}
-              </span>
-            </div>
-          )}
-
-          {/* Headline */}
-          <h1
-            class="text-[2.25rem] sm:text-[3.5rem] lg:text-[5rem] font-black leading-[1.1] tracking-tight animate-fade-in-up [animation-delay:100ms] text-balance"
-            style="color: var(--clr-text)"
-          >
-            {content.heroTitle}
-          </h1>
-
-          {/* Subtitle */}
-          <p
-            class="text-[1rem] sm:text-lg lg:text-xl font-medium leading-relaxed opacity-80 animate-fade-in-up [animation-delay:200ms] text-pretty max-w-md mx-auto"
-            style="color: var(--clr-text-2)"
-          >
-            {content.heroSubtitle}
-          </p>
-
-          {/* CTA buttons */}
-          <div class="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4 animate-fade-in-up [animation-delay:300ms]">
-            <a
-              href="/products"
-              class="btn-primary group !w-full sm:!w-auto !px-10 h-14 sm:h-16 text-base"
-            >
-              {content.heroCtaPrimary}
-              <Icon name="heroicons:arrow-right" class="w-5 h-5 transition-transform group-hover:translate-x-1 rtl:group-hover:-translate-x-1" />
-            </a>
-            <a
-              href="#best-sellers"
-              class="inline-flex items-center justify-center px-10 h-14 sm:h-16 font-black text-sm transition-all duration-300 active:scale-95 border-2 border-black/[0.08] hover:bg-white/50 w-full sm:w-auto bg-white/20 backdrop-blur-sm rounded-2xl"
-              style="color: var(--clr-text)"
-            >
-              {content.heroCtaSecondary}
-            </a>
-          </div>
-        </div>
+      <div class="mt-9 flex flex-col items-stretch justify-center gap-3 sm:flex-row sm:items-center dx-reveal" style="animation-delay: 180ms">
+        <a href="#pricing" class="dx-btn dx-btn--primary dx-btn--lg">
+          {content.heroCtaPrimary}
+          <Icon name="heroicons:arrow-right" class:list={[isRTL && "dx-flip"]} aria-hidden="true" />
+        </a>
+        <a href="#demo" class="dx-btn dx-btn--secondary dx-btn--lg" data-demo-open>
+          <span class="dx-btn__play" aria-hidden="true"><Icon name="heroicons:play" /></span>
+          {content.heroCtaSecondary}
+        </a>
       </div>
 
+      {trust.length > 0 && (
+        <ul class="dx-trust-row mt-8 justify-center dx-reveal" style="animation-delay: 240ms">
+          {trust.map((item) => (
+            <li><Icon name="heroicons:check-circle" aria-hidden="true" />{item}</li>
+          ))}
+        </ul>
+      )}
+    </div>
+
+    <div class="mt-14 lg:mt-16">
+      <HeroVisual content={content} currency={currency} />
     </div>
   </div>
 </section>
-
-<style>
-  @keyframes fade-in-up {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-  .animate-fade-in-up {
-    animation: fade-in-up 0.8s var(--animate-spring) forwards;
-    opacity: 0;
-  }
-</style>

@@ -1,0 +1,70 @@
+---
+import { Icon } from "astro-icon/components";
+import type { StoreFrontContent } from "@/theme/content";
+import { fmt, fill, planPoints, type PlanPrice } from "@/theme/utils/plans";
+
+interface Props {
+  product: any;
+  prices: PlanPrice[];
+  defaultIndex: number;
+  recommended?: boolean;
+  content: StoreFrontContent;
+  currency: string;
+  storeName: string;
+  headingTag?: "h3" | "h2";
+}
+
+const { product, prices, defaultIndex, recommended = false, content: c, currency, storeName, headingTag = "h3" } = Astro.props;
+const Heading = headingTag;
+const href = `/products/${product.handle}`;
+const { tagline, points } = planPoints(product.descriptionPlain ?? product.description);
+const shortName = product.name.startsWith(`${storeName} `) ? product.name.slice(storeName.length + 1) : product.name;
+const showFrom = product.hasVariants && prices.length === 1;
+const isOutOfStock = product.trackInventory && product.inventory === 0;
+---
+
+<article class:list={["dx-plan", recommended && "dx-plan--featured"]} data-plan>
+  {recommended && c.pricingRecommendedBadge && (
+    <span class="dx-plan__badge"><Icon name="heroicons:sparkles" aria-hidden="true" />{c.pricingRecommendedBadge}</span>
+  )}
+  <Heading class="dx-plan__name">{product.name}</Heading>
+  {tagline && <p class="dx-plan__tagline">{tagline}</p>}
+
+  {prices.map((p, i) => (
+    <div data-duration-panel={i} hidden={i !== defaultIndex}>
+      {showFrom && <p class="dx-small mt-5 !mb-[-1rem] font-medium">{c.pricingFrom}</p>}
+      <p class="dx-price">
+        <span class="dx-price__amount">{fmt(p.price)}</span>
+        <span class="dx-price__cur">{currency}</span>
+        {p.value && <span class="dx-price__per">{fill(c.pricingPer, { duration: p.value })}</span>}
+      </p>
+      <p class="mt-2.5 flex min-h-6 flex-wrap items-center gap-2">
+        {p.compareAtPrice != null && <span class="dx-price__was">{fmt(p.compareAtPrice)} {currency}</span>}
+        {p.saving > 0 && <span class="dx-save">{fill(c.pricingSave, { amount: fmt(p.saving), currency })}</span>}
+      </p>
+    </div>
+  ))}
+
+  <a
+    href={href}
+    data-plan-link
+    data-base-href={href}
+    class:list={["dx-btn dx-btn--block mt-6", recommended ? "dx-btn--primary dx-btn--lg" : "dx-btn--secondary dx-btn--lg"]}
+    aria-disabled={isOutOfStock ? "true" : undefined}
+  >
+    {isOutOfStock ? c.outOfStock : fill(c.pricingChoose, { plan: shortName })}
+    {!isOutOfStock && <Icon name="heroicons:arrow-right" class="dx-flip" aria-hidden="true" />}
+  </a>
+
+  {points.length > 0 && (
+    <>
+      <div class="dx-plan__divider"></div>
+      <p class="dx-plan__list-title">{c.pricingIncludedTitle}</p>
+      <ul class="dx-check-list">
+        {points.map((point) => (
+          <li><span class="dx-check-list__icon"><Icon name="heroicons:check" aria-hidden="true" /></span>{point}</li>
+        ))}
+      </ul>
+    </>
+  )}
+</article>

@@ -1,0 +1,115 @@
+---
+/**
+ * "How it's made" — an exploded view of a canvas print (the print, the cotton
+ * canvas, the wooden stretcher bars), drawn in inline SVG with the product's
+ * own artwork mapped onto the top layer.
+ */
+import type { StoreFrontContent } from "@/theme/config/content";
+import SectionHead from "./SectionHead.astro";
+
+interface Props {
+  content: StoreFrontContent;
+  artwork: string | null;
+  alt: string;
+}
+
+const { content, artwork, alt } = Astro.props;
+
+type Pt = [number, number];
+const layer = (dy: number): Pt[] => [[40, 62 + dy], [170, 32 + dy], [280, 77 + dy], [150, 107 + dy]];
+const path = (pts: Pt[]) => `M${pts.map(([x, y]) => `${x} ${y}`).join(" L")} Z`;
+const inset = (pts: Pt[], k: number): Pt[] => {
+  const cx = (pts[0][0] + pts[2][0]) / 2;
+  const cy = (pts[0][1] + pts[2][1]) / 2;
+  return pts.map(([x, y]) => [cx + k * (x - cx), cy + k * (y - cy)] as Pt);
+};
+const shift = (pts: Pt[], dy: number): Pt[] => pts.map(([x, y]) => [x, y + dy] as Pt);
+
+const top = layer(0);
+const mid = layer(62);
+const base = layer(124);
+const frame = `${path(base)} ${path(inset(base, 0.74))}`;
+const frameSide = `${path(shift(base, 9))} ${path(shift(inset(base, 0.74), 9))}`;
+const [A, B, , D] = top;
+const imageMatrix = `matrix(${B[0] - A[0]} ${B[1] - A[1]} ${D[0] - A[0]} ${D[1] - A[1]} ${A[0]} ${A[1]})`;
+
+const weave: string[] = [];
+for (let t = 0.1; t < 1; t += 0.1) {
+  const a: Pt = [mid[0][0] + t * (mid[1][0] - mid[0][0]), mid[0][1] + t * (mid[1][1] - mid[0][1])];
+  const b: Pt = [mid[3][0] + t * (mid[2][0] - mid[3][0]), mid[3][1] + t * (mid[2][1] - mid[3][1])];
+  const c: Pt = [mid[0][0] + t * (mid[3][0] - mid[0][0]), mid[0][1] + t * (mid[3][1] - mid[0][1])];
+  const d: Pt = [mid[1][0] + t * (mid[2][0] - mid[1][0]), mid[1][1] + t * (mid[2][1] - mid[1][1])];
+  weave.push(`M${a[0]} ${a[1]} L${b[0]} ${b[1]}`, `M${c[0]} ${c[1]} L${d[0]} ${d[1]}`);
+}
+
+const guides = [0, 1, 2, 3].map((i) => `M${top[i][0]} ${top[i][1]} L${base[i][0]} ${base[i][1]}`);
+const badges: Array<{ at: Pt; n: string }> = [
+  { at: [top[2][0] + 14, top[2][1] - 4], n: "1" },
+  { at: [mid[2][0] + 14, mid[2][1] - 4], n: "2" },
+  { at: [base[2][0] + 14, base[2][1] - 4], n: "3" },
+];
+
+const features = [
+  { title: content.print2Title, sub: content.print2Sub },
+  { title: content.print1Title, sub: content.print1Sub },
+  { title: content.print3Title, sub: content.print3Sub },
+];
+---
+
+<section class="wd-section wd-section--paper" aria-labelledby="print-title">
+  <div class="wd-container wd-split">
+    <div>
+      <SectionHead eyebrow={content.printEyebrow} title={content.printTitle} sub={content.printSub} id="print-title" />
+      <ol class="wd-features" style="grid-template-columns: minmax(0, 1fr); gap: 0;">
+        {features.map((f, i) => (
+          <li class="wd-feature" style="flex-direction: row; border-top: 0; border-bottom: 1px solid var(--clr-border); padding-top: 1.25rem;">
+            <span class="wd-feature-num" aria-hidden="true">{String(i + 1).padStart(2, "0")}</span>
+            <div>
+              <h3>{f.title}</h3>
+              <p>{f.sub}</p>
+            </div>
+          </li>
+        ))}
+      </ol>
+    </div>
+
+    <svg class="wd-canvas-diagram" viewBox="0 0 320 250" role="img" aria-label={alt}>
+      <defs>
+        <clipPath id="cd-top-clip"><path d={path(top)} /></clipPath>
+        <clipPath id="cd-mid-clip"><path d={path(mid)} /></clipPath>
+      </defs>
+
+      {guides.map((d) => <path d={d} class="cd-callout" stroke-dasharray="2 3" />)}
+
+      <path d={frameSide} class="cd-wood-side" fill-rule="evenodd" />
+      <path d={frame} class="cd-wood" fill-rule="evenodd" />
+
+      <path d={path(shift(mid, 3))} class="cd-canvas-edge" />
+      <path d={path(mid)} class="cd-canvas" />
+      <g clip-path="url(#cd-mid-clip)">
+        {weave.map((d) => <path d={d} class="cd-weave" />)}
+      </g>
+
+      <path d={path(shift(top, 3))} class="cd-canvas-edge" />
+      <g clip-path="url(#cd-top-clip)">
+        <path d={path(top)} class="cd-print-a" />
+        {artwork ? (
+          <image href={artwork} x="0" y="0" width="1" height="1" preserveAspectRatio="none" transform={imageMatrix} />
+        ) : (
+          <>
+            <circle cx="190" cy="58" r="16" class="cd-print-c" />
+            <path d="M40 92 Q110 60 180 92 T300 92 L300 140 L40 140 Z" class="cd-print-b" />
+          </>
+        )}
+      </g>
+      <path d={path(top)} fill="none" class="cd-callout" />
+
+      {badges.map((b) => (
+        <g>
+          <circle cx={b.at[0]} cy={b.at[1]} r="8" class="cd-dot" />
+          <text x={b.at[0]} y={b.at[1] + 3} text-anchor="middle" class="cd-num">{b.n}</text>
+        </g>
+      ))}
+    </svg>
+  </div>
+</section>

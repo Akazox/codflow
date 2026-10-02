@@ -1,0 +1,126 @@
+---
+/**
+ * Demo video, as a click-to-play facade. Nothing from YouTube/Vimeo loads
+ * until the visitor clicks: the poster is local HTML (or the merchant's https
+ * poster), and demo-video.ts injects the player into the shared dialog.
+ * Without a valid `demoVideoUrl` the block becomes a "demo on request" card.
+ */
+import { Icon } from "astro-icon/components";
+import PosterScene from "./PosterScene.astro";
+import type { StoreConfig } from "@/core/api/types";
+import type { StoreFrontContent } from "@/theme/content";
+import { parseDemoVideo, safePosterUrl, whatsappLink, phoneLink } from "@/theme/utils/demo-video";
+import { buildWhatsAppHref } from "@/theme/utils/whatsapp-prefill";
+
+interface Props {
+  content: StoreFrontContent;
+  config: StoreConfig;
+  /** Plan pages use a tighter request card. */
+  compact?: boolean;
+  /** Where the "see the plans" fallback CTA points. */
+  plansHref?: string;
+}
+
+const { content: c, config, compact = false, plansHref = "/#pricing" } = Astro.props;
+
+const video = parseDemoVideo(c.demoVideoUrl);
+const poster = safePosterUrl(c.demoPosterUrl);
+const waHref =
+  whatsappLink(c.contactWhatsapp, c.waDemoPrefill) ??
+  (config.whatsapp?.href ? buildWhatsAppHref(config.whatsapp.href, c.waDemoPrefill) : null);
+const telHref = phoneLink(c.contactPhone);
+const points = [c.demoRequestPoint1, c.demoRequestPoint2, c.demoRequestPoint3].filter(Boolean);
+---
+
+{video ? (
+  <>
+    <a
+      href={video.watchUrl}
+      target="_blank"
+      rel="noopener noreferrer"
+      class="dx-video group"
+      data-demo-trigger
+      aria-label={c.demoPlayLabel}
+    >
+      {poster ? (
+        <img src={poster} alt="" class="dx-video__poster" loading="lazy" decoding="async" />
+      ) : (
+        <PosterScene />
+      )}
+      <span class="dx-video__shade" aria-hidden="true"></span>
+      <span class="dx-video__play" aria-hidden="true"><Icon name="heroicons:play" /></span>
+      <span class="dx-video__meta">
+        <span class="dx-video__label">{c.demoVideoCaption}</span>
+        {c.demoVideoDuration && <span class="dx-video__time">{c.demoVideoDuration}</span>}
+      </span>
+    </a>
+
+    <dialog
+      class="dx-modal"
+      id="dx-demo-modal"
+      aria-label={c.demoVideoCaption || c.demoTitle}
+      data-kind={video.kind}
+      data-src={video.embedUrl}
+      data-title={c.demoVideoCaption || c.demoTitle}
+    >
+      <button type="button" class="dx-modal__close" data-demo-close aria-label={c.demoCloseLabel}>
+        <Icon name="heroicons:x-mark" aria-hidden="true" />
+      </button>
+      <div class="dx-modal__frame" data-demo-frame></div>
+    </dialog>
+  </>
+) : (
+  <div class:list={["dx-demo-request", compact ? "grid gap-6" : "grid gap-8 lg:grid-cols-[1fr_1.15fr] lg:items-center"]}>
+    <div>
+      <span class="dx-chip !border-transparent" style="background: color-mix(in srgb, var(--clr-accent) 18%, transparent); color: var(--clr-accent)">
+        <Icon name="heroicons:video-camera" aria-hidden="true" />
+        {c.demoKicker}
+      </span>
+      <h3 class="dx-h3 mt-4 !text-[1.375rem]" style="color: var(--clr-on-ink)">{c.demoRequestTitle}</h3>
+      <p class="dx-body mt-3" style="color: var(--clr-on-ink-2)">{c.demoRequestSub}</p>
+      {points.length > 0 && (
+        <ul class="mt-5 grid gap-2.5">
+          {points.map((point) => (
+            <li class="flex items-center gap-2.5 text-[0.9375rem]" style="color: var(--clr-on-ink)">
+              <Icon name="heroicons:check-circle" class="h-5 w-5 shrink-0" style="color: var(--clr-accent)" aria-hidden="true" />
+              {point}
+            </li>
+          ))}
+        </ul>
+      )}
+      <div class="mt-7 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+        {waHref && (
+          <a href={waHref} target="_blank" rel="noopener noreferrer" class="dx-btn dx-btn--light dx-btn--lg">
+            <Icon name="heroicons:chat-bubble-left-right" aria-hidden="true" />
+            {c.demoRequestWhatsapp}
+          </a>
+        )}
+        {telHref && (
+          <a href={telHref} class:list={["dx-btn dx-btn--lg", waHref ? "dx-btn--outline-light" : "dx-btn--light"]}>
+            <Icon name="heroicons:phone" aria-hidden="true" />
+            {c.demoRequestCall}
+          </a>
+        )}
+        {!waHref && !telHref && (
+          <a href={plansHref} class="dx-btn dx-btn--light dx-btn--lg">
+            {c.demoRequestPricing}
+            <Icon name="heroicons:arrow-right" class="dx-flip" aria-hidden="true" />
+          </a>
+        )}
+      </div>
+    </div>
+    {!compact && (
+      <div class="dx-video !cursor-default" aria-hidden="true">
+        <PosterScene />
+        <span class="dx-video__shade"></span>
+        <span class="dx-video__play !opacity-90 !w-16 !h-16" style="color: var(--clr-text-3)">
+          <Icon name="heroicons:video-camera" class="!m-0" />
+        </span>
+      </div>
+    )}
+  </div>
+)}
+
+<script>
+  import "@/theme/scripts/demo-video";
+</script>

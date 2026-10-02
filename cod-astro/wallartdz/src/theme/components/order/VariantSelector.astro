@@ -1,14 +1,31 @@
 ---
+/**
+ * Size / frame / any-option picker.
+ *
+ * Every button keeps the platform contract product.ts reads (`.variant-opt`
+ * with data-option, data-value, data-first, data-oos) and adds what the
+ * art preview needs: aria-pressed, data-kind and, for a frame, the finish it
+ * names. A size is drawn as a rectangle at its true proportions; a frame as a
+ * swatch of this artwork inside that frame.
+ *
+ * May be rendered twice on one page (above the fold and inside the order
+ * card); product.ts keeps the two in step.
+ */
 import type { Product } from "@/core/api/types";
-import { Icon } from "astro-icon/components";
+import type { StoreFrontContent } from "@/theme/config/content";
+import { optionKind, parseSize, frameKindOf } from "@/theme/utils/art-options";
 
 interface Props {
   product: Product;
+  content: StoreFrontContent;
+  /** Smaller chips without size drawings — for the order card. */
+  compact?: boolean;
+  /** The artwork shown inside frame swatches. */
+  swatchImage?: string | null;
 }
 
-const { product } = Astro.props;
+const { product, content, compact = false, swatchImage = null } = Astro.props;
 
-// Returns true if ALL variants with this option value are out of stock
 function isValueOos(optName: string, optValue: string): boolean {
   if (!product.trackInventory) return false;
   const matching = product.variants.filter((v) => v.variations[optName] === optValue);
@@ -16,7 +33,6 @@ function isValueOos(optName: string, optValue: string): boolean {
   return matching.every((v) => v.inventory === 0);
 }
 
-// Per option: index of first in-stock value (falls back to 0 if all OOS)
 function firstInStockIdx(optName: string): number {
   if (!product.trackInventory) return 0;
   const opt = product.variantOptions?.find((o) => o.name === optName);
@@ -24,54 +40,81 @@ function firstInStockIdx(optName: string): number {
   const idx = opt.values.findIndex((v) => !isValueOos(optName, v.value));
   return idx >= 0 ? idx : 0;
 }
+
+const options = (product.variantOptions ?? []).map((opt) => {
+  const kind = optionKind(opt);
+  const defaultIdx = firstInStockIdx(opt.name);
+  const sizes = opt.values.map((v) => parseSize(v.value));
+  const maxDim = Math.max(1, ...sizes.flatMap((s) => (s ? [s.w, s.h] : [])));
+  return {
+    name: opt.name,
+    kind,
+    defaultValue: opt.values[defaultIdx]?.value ?? "",
+    values: opt.values.map((val, vi) => {
+      const size = sizes[vi];
+      const frame = frameKindOf(val.value) ?? (val.hexColor ? "custom" : null);
+      return {
+        value: val.value,
+        hexColor: val.hexColor ?? null,
+        oos: isValueOos(opt.name, val.value),
+        first: vi === defaultIdx,
+        frame,
+        shape: size ? `--sw: ${(size.w / maxDim).toFixed(3)}; --sh: ${(size.h / maxDim).toFixed(3)}` : null,
+      };
+    }),
+  };
+});
+
+const groupId = (i: number) => `wd-opt-${compact ? "c" : "h"}-${i}`;
 ---
 
-{product.hasVariants && product.variantOptions && product.variants.length > 0 && (
-  <div class="space-y-4">
-    {product.variantOptions.map((opt) => {
-      const defaultIdx = firstInStockIdx(opt.name);
-      return (
-        <div class="space-y-2">
-          <span class="text-[0.75rem] font-black uppercase tracking-widest" style="color: var(--clr-text-2)">{opt.name}</span>
-          <!-- -mx-6 px-6 lets the scroll bleed to card edges without clipping -->
-          <div class="flex gap-2 overflow-x-auto -mx-6 px-6 pb-1 scrollbar-hide">
-            {opt.values.map((val, vi) => {
-              const oos = isValueOos(opt.name, val.value);
-              return (
-                <button
-                  type="button"
-                  class:list={[
-                    "variant-opt shrink-0 flex items-center gap-2 h-10 px-4 rounded-xl border-2 transition-all duration-200 whitespace-nowrap",
-                    oos
-                      ? "opacity-40 cursor-not-allowed line-through"
-                      : "active:scale-95"
-                  ]}
-                  style="border-color: var(--clr-border); background: var(--clr-surface); color: var(--clr-text-2)"
-                  data-option={opt.name}
-                  data-value={val.value}
-                  data-first={vi === defaultIdx && !oos ? "1" : ""}
-                  data-oos={oos ? "1" : ""}
-                  aria-label={val.value}
-                  aria-disabled={oos ? "true" : undefined}
-                >
-                  {val.hexColor && (
-                    <span
-                      class="w-[1.125rem] h-[1.125rem] rounded-full shrink-0 border border-black/10 shadow-sm"
-                      style={`background: ${val.hexColor}${oos ? "; opacity: 0.4" : ""}`}
-                    ></span>
-                  )}
-                  <span class="font-bold text-[0.875rem] leading-none">{val.value}</span>
-                  {!oos && (
-                    <span class="check-icon opacity-0 transition-opacity duration-200 shrink-0 text-[var(--clr-primary)]">
-                      <Icon name="heroicons:check" class="w-3 h-3" />
-                    </span>
-                  )}
-                </button>
-              );
-            })}
-          </div>
+{product.hasVariants && options.length > 0 && product.variants.length > 0 && (
+  <div class:list={["wd-variants", compact && "wd-variants--compact"]}>
+    {options.map((opt, oi) => (
+      <div role="group" aria-labelledby={groupId(oi)}>
+        <div class="wd-opt-head">
+          <span class="wd-opt-name" id={groupId(oi)}>{opt.name}</span>
+          <span class="wd-opt-current">
+            <span data-option-current={opt.name} dir={opt.kind === "size" ? "ltr" : undefined}>{opt.defaultValue}</span>
+            {opt.kind === "size" && <span> {content.sizeUnit}</span>}
+          </span>
         </div>
-      );
-    })}
+        <div class:list={["wd-opt-row", `wd-opt-row--${opt.kind}`]}>
+          {opt.values.map((val) => (
+            <button
+              type="button"
+              class="variant-opt wd-chip"
+              data-option={opt.name}
+              data-value={val.value}
+              data-first={val.first && !val.oos ? "1" : ""}
+              data-oos={val.oos ? "1" : ""}
+              data-kind={opt.kind}
+              data-frame-kind={opt.kind === "frame" && val.frame && val.frame !== "custom" ? val.frame : undefined}
+              aria-pressed={val.first && !val.oos ? "true" : "false"}
+              aria-disabled={val.oos ? "true" : undefined}
+            >
+              {opt.kind === "size" && val.shape && (
+                <span class="wd-chip-shape-box" aria-hidden="true">
+                  <span class="wd-chip-shape" style={val.shape}></span>
+                </span>
+              )}
+              {opt.kind === "frame" && (
+                <span
+                  class="wd-swatch"
+                  data-frame={val.frame ?? "none"}
+                  style={[
+                    swatchImage ? `background-image: url("${swatchImage}")` : "",
+                    val.hexColor ? `--swatch: ${val.hexColor}` : "",
+                  ].filter(Boolean).join("; ") || undefined}
+                  aria-hidden="true"
+                ></span>
+              )}
+              <span class="wd-chip-label" dir={opt.kind === "size" ? "ltr" : undefined}>{val.value}</span>
+              {opt.kind === "size" && !compact && <span class="wd-chip-unit">{content.sizeUnit}</span>}
+            </button>
+          ))}
+        </div>
+      </div>
+    ))}
   </div>
 )}

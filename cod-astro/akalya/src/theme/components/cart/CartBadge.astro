@@ -13,7 +13,6 @@
  * changes for screen readers without stealing focus.
  */
 import type { StoreFrontContent } from "@/theme/content";
-import { Icon } from "astro-icon/components";
 
 interface Props {
   content: StoreFrontContent;
@@ -29,15 +28,17 @@ const { content } = Astro.props;
   aria-label={content.cartOpenLabel}
   aria-controls="cart-drawer"
   aria-expanded="false"
-  class="relative inline-flex h-11 w-11 items-center justify-center rounded-full transition-transform duration-150 active:scale-[0.94] focus-visible:outline-none focus-visible:ring-2"
-  style="color: var(--clr-text); --tw-ring-color: var(--clr-primary)"
+  class="akl-icon-btn relative -me-2.5 active:scale-[0.94]"
 >
-  <Icon name="heroicons:shopping-bag" class="h-6 w-6" />
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <path d="M5.2 8.5h13.6l-1 11.2a1.5 1.5 0 0 1-1.5 1.3H7.7a1.5 1.5 0 0 1-1.5-1.3L5.2 8.5Z" />
+    <path d="M8.75 8.5V7a3.25 3.25 0 0 1 6.5 0v1.5" />
+  </svg>
   <span
     id="cart-badge-count"
     hidden
     aria-live="polite"
-    class="absolute -top-0.5 -end-0.5 min-w-[1.25rem] rounded-full px-1 text-[0.6875rem] font-black leading-5 text-white"
-    style="background: var(--clr-primary)">0</span
+    class="absolute top-1 end-0.5 min-w-[1.15rem] h-[1.15rem] rounded-full px-1 text-[0.625rem] font-medium leading-[1.15rem] text-center tabular"
+    style="background: var(--clr-primary); color: var(--clr-on-primary)">0</span
   >
 </button>

@@ -7,32 +7,30 @@
 // We don't actually navigate between pages on the storefront — full page
 // loads are fine and removed the regression entirely.
 
+import { MEDIA_DOMAIN } from "astro:env/server";
+import { BRAND } from "@/theme/config/brand";
+
 interface Props {
   title: string;
   description: string;
   ogImage: string;
   noindex?: boolean;
   config: any;
-  primary: string;
-  fontHref: string;
-  font: string;
-  bg: string;
-  accent: string;
   /** The page's LCP images (landing page stack top) — preloaded in <head>
    *  so their fetch starts before the parser reaches the <img> tags. */
   preloadImages?: string[];
 }
 
-const { title, description, ogImage, noindex, config, primary, fontHref, font, bg, accent, preloadImages } = Astro.props;
-
-import { MEDIA_DOMAIN } from "astro:env/server";
+const { title, description, ogImage, noindex, config, preloadImages } = Astro.props;
+const fontHref = BRAND.fontsHref;
+const ogLocale = config.lang === "ar" ? "ar_DZ" : config.lang === "fr" ? "fr_DZ" : "en_US";
 ---
 
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="generator" content={Astro.generator} />
-  <meta name="theme-color" content={primary} />
+  <meta name="theme-color" content={BRAND.ink} />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <link rel="icon" href="/favicon.ico" sizes="any" />
@@ -51,7 +49,7 @@ import { MEDIA_DOMAIN } from "astro:env/server";
   <meta property="og:description" content={description} />
   {ogImage && <meta property="og:image" content={ogImage} />}
   <meta property="og:type" content="website" />
-  <meta property="og:locale" content={config.lang === "ar" ? "ar_DZ" : "en_US"} />
+  <meta property="og:locale" content={ogLocale} />
 
   <!-- Twitter -->
   <meta name="twitter:card" content="summary_large_image" />
@@ -105,27 +103,18 @@ fbq('track', 'PageView');
     </Fragment>
   )}
 
-  <!-- Dynamic theme tokens + Critical CSS -->
+  <!-- Critical CSS. The brand owns its palette and type (global.css), so the
+       dashboard's colour/font settings are deliberately not injected here. -->
   <style set:html={`
-    :root {
-      --clr-primary: ${primary};
-      --clr-accent:  ${accent};
-      --clr-bg:      ${bg};
-      --font-body:   ${font};
-      --safe-top: env(safe-area-inset-top, 0px);
-      --safe-bottom: env(safe-area-inset-bottom, 0px);
-    }
-    /* Critical above-the-fold styles */
     *, *::before, *::after { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-    html { scroll-behavior: smooth; height: -webkit-fill-available; }
+    html { scroll-behavior: smooth; }
     body {
-      font-family: var(--font-body), "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
-      background: var(--clr-bg);
-      color: var(--clr-text);
+      background: ${BRAND.wall};
+      color: ${BRAND.ink};
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
       min-height: 100vh;
-      line-height: 1.5;
+      line-height: 1.6;
       overflow-x: hidden;
       margin: 0;
     }

@@ -1,0 +1,30 @@
+---
+import type { StoreFrontContent } from "@/theme/config/content";
+import { Icon } from "astro-icon/components";
+
+interface Props {
+  content: StoreFrontContent;
+  /** Four badges (adds the exchange guarantee) instead of three. */
+  full?: boolean;
+  class?: string;
+}
+
+const { content, full = false, class: className } = Astro.props;
+
+const items = [
+  { icon: "heroicons:banknotes", title: content.trust1Title, sub: content.trust1Sub },
+  { icon: "heroicons:truck", title: content.trust2Title, sub: content.trust2Sub },
+  { icon: "heroicons:photo", title: content.trust3Title, sub: content.trust3Sub },
+  ...(full ? [{ icon: "heroicons:arrow-path", title: content.trust4Title, sub: content.trust4Sub }] : []),
+];
+---
+
+<ul class:list={["wd-trust", full && "wd-trust--4", className]}>
+  {items.map((item) => (
+    <li class="wd-trust-item">
+      <Icon name={item.icon} aria-hidden="true" />
+      <span class="wd-trust-title">{item.title}</span>
+      <span class="wd-trust-sub">{item.sub}</span>
+    </li>
+  ))}
+</ul>

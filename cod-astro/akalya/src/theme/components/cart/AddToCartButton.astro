@@ -25,6 +25,8 @@ interface Props {
   defaultVariant?: ProductVariant | null;
   /** Thumbnail for the drawer row. */
   image?: string | null;
+  /** Round icon-only button for product cards (accessible name from content). */
+  compact?: boolean;
   class?: string;
 }
 
@@ -34,6 +36,7 @@ const {
   basePrice,
   defaultVariant = null,
   image = null,
+  compact = false,
   class: className = "",
 } = Astro.props;
 
@@ -45,22 +48,39 @@ const defaultVariantLabel = defaultVariant?.variations
   : "";
 ---
 
-<button
-  type="button"
-  data-add-to-cart
-  data-product-id={product.id}
-  data-product-name={product.name}
-  data-product-href={`/products/${product.handle}`}
-  data-unit-price={basePrice}
-  data-variant-id={defaultVariant?.id ?? ""}
-  data-variant-label={defaultVariantLabel}
-  data-image={image ?? ""}
-  class:list={[
-    "inline-flex h-[3.25rem] w-full items-center justify-center gap-2 rounded-[var(--radius-btn)] border-2 text-[0.9375rem] font-black transition-transform duration-150 active:scale-[0.985] focus-visible:outline-none focus-visible:ring-2",
-    className,
-  ]}
-  style="border-color: var(--clr-primary); color: var(--clr-primary); background: var(--clr-surface); --tw-ring-color: var(--clr-primary)"
->
-  <Icon name="heroicons:shopping-bag" class="h-[1.125rem] w-[1.125rem]" />
-  <span>{content.cartAddToCart}</span>
-</button>
+{compact ? (
+  <button
+    type="button"
+    data-add-to-cart
+    data-product-id={product.id}
+    data-product-name={product.name}
+    data-product-href={`/products/${product.handle}`}
+    data-unit-price={basePrice}
+    data-variant-id={defaultVariant?.id ?? ""}
+    data-variant-label={defaultVariantLabel}
+    data-image={image ?? ""}
+    aria-label={content.cartQuickAddLabel.replace("{name}", product.name)}
+    class:list={["akl-quick-add", className]}
+  >
+    <Icon name="heroicons:plus" />
+  </button>
+) : (
+  <button
+    type="button"
+    data-add-to-cart
+    data-product-id={product.id}
+    data-product-name={product.name}
+    data-product-href={`/products/${product.handle}`}
+    data-unit-price={basePrice}
+    data-variant-id={defaultVariant?.id ?? ""}
+    data-variant-label={defaultVariantLabel}
+    data-image={image ?? ""}
+    class:list={["btn-outline w-full", className]}
+  >
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M5.2 8.5h13.6l-1 11.2a1.5 1.5 0 0 1-1.5 1.3H7.7a1.5 1.5 0 0 1-1.5-1.3L5.2 8.5Z" />
+      <path d="M8.75 8.5V7a3.25 3.25 0 0 1 6.5 0v1.5" />
+    </svg>
+    <span>{content.cartAddToCart}</span>
+  </button>
+)}

@@ -1,0 +1,117 @@
+---
+/**
+ * FDI odontogram, drawn as the classic five-surface chart (inline SVG, no
+ * images). Purely illustrative: the states are the demo patient shown in the
+ * marketing visuals. Always laid out left-to-right, as dental charts are in
+ * every language.
+ */
+type State = "caries" | "restoration" | "crown" | "endo" | "implant" | "missing";
+type Surface = "c" | "t" | "r" | "b" | "l";
+
+interface Props {
+  showNumbers?: boolean;
+  selected?: number;
+  label?: string;
+  class?: string;
+}
+
+const { showNumbers = false, selected, label, class: className } = Astro.props;
+
+const chart: Record<number, { state: State; surfaces?: Surface[] }> = {
+  16: { state: "caries", surfaces: ["c"] },
+  15: { state: "restoration", surfaces: ["c", "r"] },
+  11: { state: "restoration", surfaces: ["b"] },
+  21: { state: "restoration", surfaces: ["b"] },
+  24: { state: "caries", surfaces: ["l"] },
+  26: { state: "crown" },
+  36: { state: "endo" },
+  37: { state: "missing" },
+  44: { state: "caries", surfaces: ["t"] },
+  46: { state: "implant" },
+  47: { state: "restoration", surfaces: ["c"] },
+};
+
+const S = 10;
+const GAP = 2;
+const MID = 6;
+const PAD = 4;
+const upper = [18, 17, 16, 15, 14, 13, 12, 11, 21, 22, 23, 24, 25, 26, 27, 28];
+const lower = [48, 47, 46, 45, 44, 43, 42, 41, 31, 32, 33, 34, 35, 36, 37, 38];
+const width = PAD * 2 + 16 * S + 14 * GAP + MID;
+const top = showNumbers ? 9 : PAD;
+const rowGap = 6;
+const lowerY = top + S + rowGap;
+const height = lowerY + S + (showNumbers ? 9 : PAD);
+
+const xOf = (i: number) => PAD + i * (S + GAP) + (i >= 8 ? MID - GAP : 0);
+const pts = (list: Array<[number, number]>) => list.map(([x, y]) => `${x.toFixed(2)},${y.toFixed(2)}`).join(" ");
+
+function tooth(fdi: number, i: number, y: number) {
+  const x = xOf(i);
+  const inset = S * 0.32;
+  const TL: [number, number] = [x, y];
+  const TR: [number, number] = [x + S, y];
+  const BR: [number, number] = [x + S, y + S];
+  const BL: [number, number] = [x, y + S];
+  const iTL: [number, number] = [x + inset, y + inset];
+  const iTR: [number, number] = [x + S - inset, y + inset];
+  const iBR: [number, number] = [x + S - inset, y + S - inset];
+  const iBL: [number, number] = [x + inset, y + S - inset];
+  const entry = chart[fdi];
+  const whole = entry && !entry.surfaces && entry.state !== "missing";
+  const cls = (surface: Surface) => {
+    if (!entry) return "t-surf";
+    if (entry.state === "missing") return "t-surf s-missing";
+    if (whole) return entry.state === "endo" && surface !== "c" ? "t-surf" : `t-surf s-${entry.state}`;
+    return entry.surfaces!.includes(surface) ? `t-surf s-${entry.state}` : "t-surf";
+  };
+  return {
+    fdi,
+    x,
+    y,
+    surfaces: [
+      { d: pts([TL, TR, iTR, iTL]), cls: cls("t") },
+      { d: pts([TR, BR, iBR, iTR]), cls: cls("r") },
+      { d: pts([BR, BL, iBL, iBR]), cls: cls("b") },
+      { d: pts([BL, TL, iTL, iBL]), cls: cls("l") },
+      { d: pts([iTL, iTR, iBR, iBL]), cls: cls("c") },
+    ],
+    missing: entry?.state === "missing",
+    endo: entry?.state === "endo",
+    implant: entry?.state === "implant",
+  };
+}
+
+const rows = [
+  { y: top, teeth: upper.map((n, i) => tooth(n, i, top)), numY: top - 3 },
+  { y: lowerY, teeth: lower.map((n, i) => tooth(n, i, lowerY)), numY: lowerY + S + 6.5 },
+];
+const midX = xOf(8) - (MID / 2);
+---
+
+<svg
+  class:list={["dx-odonto", className]}
+  viewBox={`0 0 ${width} ${height}`}
+  role={label ? "img" : undefined}
+  aria-label={label}
+  aria-hidden={label ? undefined : "true"}
+>
+  <line class="t-mid" x1={midX} y1={top - 2} x2={midX} y2={lowerY + S + 2} />
+  <line class="t-mid" x1={PAD} y1={top + S + rowGap / 2} x2={width - PAD} y2={top + S + rowGap / 2} />
+  {rows.map((row) => row.teeth.map((t) => (
+    <g>
+      {t.surfaces.map((s) => <polygon points={s.d} class={s.cls} />)}
+      <rect class="t-out" x={t.x} y={t.y} width={S} height={S} rx="1.6" />
+      {t.endo && <rect class="t-sel" x={t.x + 0.6} y={t.y + 0.6} width={S - 1.2} height={S - 1.2} rx="1.2" style="stroke: var(--tooth-endo)" />}
+      {t.implant && <line class="t-x" x1={t.x + S / 2} y1={t.y + 2.2} x2={t.x + S / 2} y2={t.y + S - 2.2} style="stroke: var(--tooth-base)" />}
+      {t.missing && (
+        <>
+          <line class="t-x" x1={t.x + 2} y1={t.y + 2} x2={t.x + S - 2} y2={t.y + S - 2} />
+          <line class="t-x" x1={t.x + S - 2} y1={t.y + 2} x2={t.x + 2} y2={t.y + S - 2} />
+        </>
+      )}
+      {selected === t.fdi && <rect class="t-sel" x={t.x - 1.4} y={t.y - 1.4} width={S + 2.8} height={S + 2.8} rx="2.6" />}
+      {showNumbers && <text class="t-num" x={t.x + S / 2} y={row.numY}>{t.fdi}</text>}
+    </g>
+  )))}
+</svg>

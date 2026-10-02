@@ -306,4 +306,80 @@ export interface StoreFrontContent {
   notFoundCtaHome: string;
   notFoundCtaProducts: string;
   notFoundPageTitle: string;
+
+  // ── WallArt DZ — navigation & footer ─────────────────────────────────────
+  navGallery: string;
+  navCollections: string;
+  navHowToOrder: string;
+  footerLegal: string;
+  footerContact: string;
+
+  // ── WallArt DZ — fourth trust badge (exchange guarantee) ─────────────────
+  trust4Title: string;
+  trust4Sub: string;
+
+  // ── WallArt DZ — home ────────────────────────────────────────────────────
+  categoriesSub: string;
+  /** Artworks in a collection — uses {n} */
+  collectionCount: string;
+  howItWorksEyebrow: string;
+  howStep4Title: string;
+  howStep4Sub: string;
+  /** WhatsApp prefill for the custom-print banner */
+  waPrefillCustomPrint: string;
+  gallerySub: string;
+
+  // ── WallArt DZ — product landing page ────────────────────────────────────
+  pdpEyebrow: string;
+  priceFromLabel: string;
+  sizeUnit: string;
+  aboutArtworkTitle: string;
+  printEyebrow: string;
+  printTitle: string;
+  printSub: string;
+  print1Title: string;
+  print1Sub: string;
+  print2Title: string;
+  print2Sub: string;
+  print3Title: string;
+  print3Sub: string;
+  sizeGuideEyebrow: string;
+  sizeGuideTitle: string;
+  sizeGuideSub: string;
+  sizeGuideNote: string;
+  sizeGuideSelected: string;
+  frameGuideEyebrow: string;
+  frameGuideTitle: string;
+  frameGuideSub: string;
+  frameNoneSub: string;
+  frameBlackSub: string;
+  frameWoodSub: string;
+  frameWhiteSub: string;
+  frameGoldSub: string;
+  guaranteeEyebrow: string;
+  guaranteeTitle: string;
+  guaranteeBody: string;
+  guarantee1: string;
+  guarantee2: string;
+  guarantee3: string;
+  faqEyebrow: string;
+  faqTitle: string;
+  faq1Q: string;
+  faq1A: string;
+  faq2Q: string;
+  faq2A: string;
+  faq3Q: string;
+  faq3A: string;
+  faq4Q: string;
+  faq4A: string;
+  faq5Q: string;
+  faq5A: string;
+  formLead: string;
+  formYourArtwork: string;
+  reviewsWritePrompt: string;
+
+  // ── WallArt DZ — thank-you page ──────────────────────────────────────────
+  thankYouCallTitle: string;
+  thankYouCallBody: string;
+  thankYouNextTitle: string;
 }

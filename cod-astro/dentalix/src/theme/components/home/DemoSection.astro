@@ -1,0 +1,25 @@
+---
+import DemoVideo from "@/theme/components/demo/DemoVideo.astro";
+import type { StoreConfig } from "@/core/api/types";
+import type { StoreFrontContent } from "@/theme/content";
+
+interface Props {
+  content: StoreFrontContent;
+  config: StoreConfig;
+}
+
+const { content, config } = Astro.props;
+---
+
+<section id="demo" class="dx-section dx-ink overflow-hidden" aria-labelledby="demo-title">
+  <div class="dx-container">
+    <div class="dx-section-head">
+      <span class="dx-kicker">{content.demoKicker}</span>
+      <h2 id="demo-title" class="dx-h2">{content.demoTitle}</h2>
+      <p class="dx-lead mt-5">{content.demoSub}</p>
+    </div>
+    <div class="mx-auto max-w-5xl">
+      <DemoVideo content={content} config={config} />
+    </div>
+  </div>
+</section>

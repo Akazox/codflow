@@ -1,0 +1,20 @@
+---
+interface Props {
+  eyebrow?: string;
+  title: string;
+  sub?: string;
+  center?: boolean;
+  id?: string;
+  level?: "h1" | "h2";
+}
+
+const { eyebrow, title, sub, center = false, id, level = "h2" } = Astro.props;
+const Heading = level;
+---
+
+<div class:list={["wd-section-head", center && "wd-section-head--center"]}>
+  {eyebrow && <span class="wd-eyebrow">{eyebrow}</span>}
+  <Heading class:list={["wd-display", level === "h1" ? "wd-h1" : "wd-h2"]} id={id}>{title}</Heading>
+  {sub && <p class="wd-lead">{sub}</p>}
+  <slot />
+</div>

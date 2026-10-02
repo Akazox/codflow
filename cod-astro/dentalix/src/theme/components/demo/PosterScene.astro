@@ -1,0 +1,31 @@
+---
+/** Decorative, text-free product scene used as the built-in video poster. */
+const blocks = [
+  [{ r: 0, s: 2, t: "teal" }, { r: 3, s: 1, t: "amber" }, { r: 5, s: 2, t: "indigo" }],
+  [{ r: 1, s: 1, t: "rose" }, { r: 2, s: 2, t: "sky" }, { r: 5, s: 1, t: "teal" }],
+  [{ r: 0, s: 1, t: "violet" }, { r: 2, s: 1, t: "teal" }, { r: 4, s: 2, t: "amber" }],
+  [{ r: 1, s: 2, t: "indigo" }, { r: 4, s: 1, t: "rose" }, { r: 5, s: 2, t: "teal" }],
+];
+---
+
+<div class="dx-video__scene" aria-hidden="true">
+  <div class="dx-window">
+    <div class="dx-window__bar"><span class="dx-window__dots"><i></i><i></i><i></i></span></div>
+    <div class="grid grid-cols-[22%_1fr] min-h-[13rem] sm:min-h-[18rem]">
+      <div class="space-y-2 p-3" style="background: var(--clr-surface-alt); border-inline-end: 1px solid var(--clr-border)">
+        {[70, 85, 60, 90, 75, 65].map((w, i) => (
+          <div class="h-2.5 rounded-full" style={`width: ${w}%; background: ${i === 1 ? "var(--clr-primary-tint)" : "var(--clr-border)"}`}></div>
+        ))}
+      </div>
+      <div class="grid grid-cols-4 gap-2 p-3">
+        {blocks.map((col) => (
+          <div class="dx-agenda__col !min-h-0" style="background-size: 100% calc(100% / 7)">
+            {col.map((b) => (
+              <div class={`dx-appt dx-appt--${b.t}`} style={`top: calc(${(b.r / 7) * 100}% + 2px); height: calc(${(b.s / 7) * 100}% - 4px); animation: none`}></div>
+            ))}
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+</div>

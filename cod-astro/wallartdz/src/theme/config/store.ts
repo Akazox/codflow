@@ -1,8 +1,3 @@
-// ╔══════════════════════════════════════════════════════════════════════╗
-// ║  CUSTOMIZE HERE (Custom mode) — DEFAULT_CONFIG only                  ║
-// ║  Edit DEFAULT_CONFIG to change fallback colors/font/meta when the    ║
-// ║  API is unreachable. All other code in this file is core engine.     ║
-// ╚══════════════════════════════════════════════════════════════════════╝
 /**
  * Per-request store data helpers.
  * Call once per page — pass the returned config to StoreLayout to avoid
@@ -12,17 +7,18 @@ import { fetchStoreConfig } from "@/core/api/client";
 import { resolveContent } from "@/theme/content";
 import type { StoreConfig } from "@/core/api/types";
 import type { StoreFrontContent } from "@/theme/content";
+import { BRAND } from "@/theme/config/brand";
 
 export const DEFAULT_CONFIG: StoreConfig = {
   id: "",
-  name: "متجري",
+  name: "WallArt DZ",
   domain: null,
   logoUrl: null,
   themeId: "wallartdz",
-  primaryColor: "#7c3aed",
-  accentColor: "#f59e0b",
-  bgColor: "#f8f8f8",
-  fontFamily: "Cairo, sans-serif",
+  primaryColor: BRAND.ink,
+  accentColor: BRAND.terracotta,
+  bgColor: BRAND.wall,
+  fontFamily: BRAND.fontFamily,
   fontUrl: null,
   lang: "ar",
   currency: "DZD",
